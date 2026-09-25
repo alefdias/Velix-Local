@@ -117,23 +117,23 @@ class TopNavBar extends StatelessWidget {
                   Container(
                     width: 38,
                     height: 38,
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0078D4), Color(0xFF00C7FF)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFF0078D4).withOpacity(0.25),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0078D4).withOpacity(0.35),
+                          color: const Color(0xFF0078D4).withOpacity(0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.all_inclusive, color: Colors.white, size: 22),
+                    child: Center(
+                      child: Image.asset('assets/logo.png', width: 28, height: 28, fit: BoxFit.contain),
                     ),
                   ),
                   const SizedBox(width: 12),

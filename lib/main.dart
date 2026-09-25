@@ -219,13 +219,20 @@ class _AppInitializerState extends State<AppInitializer> {
               Container(
                 width: 68,
                 height: 68,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0078D4), Color(0xFF00C7FF)],
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0078D4).withOpacity(0.15),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.all_inclusive, color: Colors.white, size: 36),
+                child: Image.asset('assets/logo.png', fit: BoxFit.contain),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -453,13 +460,13 @@ class _MainScaffoldState extends State<MainScaffold> {
               Container(
                 width: 28,
                 height: 28,
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0078D4), Color(0xFF00C7FF)],
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFF0078D4).withOpacity(0.2)),
                 ),
-                child: const Icon(Icons.all_inclusive, color: Colors.white, size: 16),
+                child: Image.asset('assets/logo.png', fit: BoxFit.contain),
               ),
               const SizedBox(width: 10),
               const Text('Velix Local', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
