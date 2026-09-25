@@ -66,6 +66,11 @@ class TopNavBar extends StatelessWidget {
         badgeCount: activeTransfersCount > 0 ? activeTransfersCount : null,
       ),
       const TopNavItem(
+        icon: Icons.rocket_launch_outlined,
+        activeIcon: Icons.rocket_launch_rounded,
+        label: 'Deploy',
+      ),
+      const TopNavItem(
         icon: Icons.history_outlined,
         activeIcon: Icons.history_rounded,
         label: 'Histórico',
@@ -169,8 +174,32 @@ class TopNavBar extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: List.generate(items.length, (index) {
-                  // Mapeamento: 0: Home (index 5), 1: Dispositivos (0), 2: Sync (1), 3: Transferências (2), 4: Histórico (3), 5: Ajustes (4)
-                  final targetScreenIndex = index == 0 ? 5 : (index - 1);
+                  int targetScreenIndex;
+                  switch (index) {
+                    case 0:
+                      targetScreenIndex = 5; // Início
+                      break;
+                    case 1:
+                      targetScreenIndex = 0; // Dispositivos
+                      break;
+                    case 2:
+                      targetScreenIndex = 1; // Sync
+                      break;
+                    case 3:
+                      targetScreenIndex = 2; // Transferir
+                      break;
+                    case 4:
+                      targetScreenIndex = 6; // Deploy
+                      break;
+                    case 5:
+                      targetScreenIndex = 3; // Histórico
+                      break;
+                    case 6:
+                      targetScreenIndex = 4; // Ajustes
+                      break;
+                    default:
+                      targetScreenIndex = 5;
+                  }
                   final isSelected = selectedIndex == targetScreenIndex;
                   final item = items[index];
 

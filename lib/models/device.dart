@@ -67,7 +67,7 @@ class Device {
     required this.platform,
     required this.ip,
     required this.port,
-    this.isTrusted = false,
+    this.isTrusted = true,
     this.isOnline = true,
     this.lastSeen,
     this.pairedAt,

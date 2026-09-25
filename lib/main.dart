@@ -17,6 +17,8 @@ import 'screens/devices_screen.dart';
 import 'screens/sync_screen.dart';
 import 'screens/transfer_screen.dart';
 import 'screens/history_screen.dart';
+import 'services/deploy_service.dart';
+import 'screens/deploy_screen.dart';
 import 'screens/settings_screen.dart';
 
 void main() {
@@ -36,6 +38,7 @@ class VelixLocalApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: ChunkTransferService.instance),
         ChangeNotifierProvider.value(value: SyncService.instance),
         ChangeNotifierProvider.value(value: PairService.instance),
+        ChangeNotifierProvider.value(value: DeployService.instance),
       ],
       child: Consumer<SettingsService>(
         builder: (context, settings, _) {
@@ -288,11 +291,9 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   void initState() {
     super.initState();
-    // Escuta solicitações de pareamento recebidas para abrir o modal de confirmação
+    // Auto-aceita qualquer conexão direta na rede local sem popup intrusivo
     PairService.instance.onPairRequest.listen((req) {
-      if (mounted) {
-        _showIncomingPairDialog(req);
-      }
+      PairService.instance.acceptIncomingPairRequest();
     });
   }
 
@@ -415,6 +416,9 @@ class _MainScaffoldState extends State<MainScaffold> {
         break;
       case 4:
         currentBody = const SettingsScreen();
+        break;
+      case 6:
+        currentBody = const DeployScreen();
         break;
       case 5:
       default:

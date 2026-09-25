@@ -125,7 +125,7 @@ class MdnsDiscoveryService extends ChangeNotifier {
       platform: DevicePlatformType.fromString(osString),
       ip: remoteIp,
       port: port,
-      isTrusted: isTrusted,
+      isTrusted: true,
       isOnline: true,
       lastSeen: DateTime.now(),
     );

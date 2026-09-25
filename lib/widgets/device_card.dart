@@ -210,64 +210,27 @@ class DeviceCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!device.isTrusted)
-                  ElevatedButton.icon(
-                    onPressed: device.isOnline ? onPair : null,
-                    icon: const Icon(Icons.link, size: 16),
-                    label: const Text('Parear'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0078D4),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  )
-                else ...[
-                  FilledButton.tonalIcon(
-                    onPressed: device.isOnline ? onSendFiles : null,
-                    icon: const Icon(Icons.send_rounded, size: 16),
-                    label: const Text('Enviar'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
+                FilledButton.tonalIcon(
+                  onPressed: device.isOnline ? onSendFiles : null,
+                  icon: const Icon(Icons.send_rounded, size: 16),
+                  label: const Text('Enviar'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0078D4).withOpacity(0.12),
+                    foregroundColor: const Color(0xFF0078D4),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  const SizedBox(width: 6),
-                  PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    onSelected: (val) {
-                      if (val == 'rename' && onRename != null) onRename!();
-                      if (val == 'unpair' && onUnpair != null) onUnpair!();
-                    },
-                    itemBuilder: (ctx) => [
-                      const PopupMenuItem(
-                        value: 'rename',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 18, color: Color(0xFF0078D4)),
-                            SizedBox(width: 10),
-                            Text('Renomear / Apelido'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'unpair',
-                        child: Row(
-                          children: [
-                            Icon(Icons.link_off, size: 18, color: Colors.redAccent),
-                            SizedBox(width: 10),
-                            Text('Remover pareamento', style: TextStyle(color: Colors.redAccent)),
-                          ],
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
-                ],
+                  tooltip: 'Renomear Dispositivo',
+                  onPressed: onRename,
+                ),
               ],
             ),
           ],

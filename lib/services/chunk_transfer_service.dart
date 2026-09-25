@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../models/device.dart';
 import '../models/transfer.dart';
 import '../models/chunk_progress.dart';
+import 'package:open_filex/open_filex.dart';
 import 'database_service.dart';
 import 'settings_service.dart';
 import 'pair_service.dart';
@@ -70,6 +71,8 @@ class ChunkTransferService extends ChangeNotifier {
         await _handleReceiveChunk(request);
       } else if (path == '/api/transfer/complete' && request.method == 'POST') {
         await _handleTransferComplete(request);
+      } else if (path == '/api/deploy/execute' && request.method == 'POST') {
+        await _handleDeployExecute(request);
       } else {
         request.response.statusCode = HttpStatus.notFound;
         request.response.write('Not Found');
@@ -569,6 +572,82 @@ class ChunkTransferService extends ChangeNotifier {
       await velixTemp.create(recursive: true);
     }
     return velixTemp;
+  }
+
+  Future<void> _handleDeployExecute(HttpRequest request) async {
+    final fileNameEncoded = request.headers.value('x-filename') ?? 'installer.bin';
+    final fileName = Uri.decodeComponent(fileNameEncoded);
+    final argsEncoded = request.headers.value('x-arguments') ?? '';
+    final argsString = Uri.decodeComponent(argsEncoded);
+    final sourceDeviceEncoded = request.headers.value('x-source-device') ?? 'Remoto';
+    final sourceDevice = Uri.decodeComponent(sourceDeviceEncoded);
+
+    // Salvar em pasta temporária segura
+    Directory baseDir;
+    try {
+      baseDir = await getTemporaryDirectory();
+    } catch (_) {
+      baseDir = Directory.current;
+    }
+    final deployDir = Directory(p.join(baseDir.path, 'velix_deploy'));
+    if (!await deployDir.exists()) {
+      await deployDir.create(recursive: true);
+    }
+
+    final targetPath = p.join(deployDir.path, fileName);
+    final targetFile = File(targetPath);
+    final sink = targetFile.openWrite();
+    await for (final chunk in request) {
+      sink.add(chunk);
+    }
+    await sink.flush();
+    await sink.close();
+
+    debugPrint('[Deploy] Instalador "$fileName" recebido com sucesso de "$sourceDevice". Disparando execução local...');
+
+    final ext = p.extension(fileName).toLowerCase();
+    String executionMessage = 'Instalação silenciosa disparada com sucesso no computador!';
+
+    try {
+      if (Platform.isWindows) {
+        if (ext == '.msi') {
+          Process.start('msiexec', ['/i', targetPath, '/quiet', '/qn', '/norestart']);
+        } else {
+          final customList = argsString.trim().isNotEmpty
+              ? argsString.trim().split(' ')
+              : ['/S', '/silent', '/quiet', '/qn'];
+          Process.start(targetPath, customList);
+        }
+      } else if (Platform.isLinux) {
+        if (ext == '.rpm') {
+          // No Fedora/RHEL:
+          Process.start('rpm', ['-Uvh', '--replacepkgs', targetPath]);
+        } else if (ext == '.deb') {
+          // No Ubuntu/Debian:
+          Process.start('dpkg', ['-i', targetPath]);
+        } else if (ext == '.sh') {
+          await Process.run('chmod', ['+x', targetPath]);
+          Process.start('bash', [targetPath]);
+        } else {
+          await Process.run('chmod', ['+x', targetPath]);
+          Process.start(targetPath, argsString.trim().isNotEmpty ? argsString.trim().split(' ') : []);
+        }
+      } else if (Platform.isAndroid) {
+        OpenFilex.open(targetPath);
+      }
+    } catch (e) {
+      debugPrint('[Deploy] Erro ao disparar processo: $e');
+      executionMessage = 'Instalador salvo com sucesso. Erro ao disparar: $e';
+    }
+
+    request.response.statusCode = HttpStatus.ok;
+    request.response.headers.contentType = ContentType.json;
+    request.response.write(jsonEncode({
+      'status': 'success',
+      'message': executionMessage,
+      'file': fileName,
+    }));
+    await request.response.close();
   }
 
   void stopServer() {
