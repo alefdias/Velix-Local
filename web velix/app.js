@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   detectOSAndHighlight();
   fetchLatestRelease();
+
+  // Verifica novas versões automaticamente a cada 60 segundos mesmo com a aba aberta
+  setInterval(fetchLatestRelease, 60000);
 });
 
 /**
@@ -32,7 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function fetchLatestRelease() {
   try {
-    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+    // Timestamp para evitar cache do navegador e pegar sempre a release recém-gerada
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      },
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
 
