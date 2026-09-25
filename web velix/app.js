@@ -4,7 +4,7 @@
  */
 
 const GITHUB_REPO = 'alefdias/Velix-Local';
-const DEFAULT_VERSION = 'v1.0.7';
+const DEFAULT_VERSION = 'v1.0.8';
 
 // Fallback direct release download URLs (GitHub redirects /latest/download/<file> directly)
 const FALLBACK_DOWNLOADS = {
