@@ -11,6 +11,7 @@ import 'services/pair_service.dart';
 import 'models/device.dart';
 
 import 'widgets/sidebar.dart';
+import 'widgets/top_navbar.dart';
 import 'screens/home_screen.dart';
 import 'screens/devices_screen.dart';
 import 'screens/sync_screen.dart';
@@ -423,94 +424,19 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     if (isDesktop) {
       return Scaffold(
-        body: Row(
+        body: Column(
           children: [
-            Sidebar(
-              selectedIndex: _selectedIndex == 5 ? -1 : _selectedIndex,
-              onDestinationSelected: (idx) {
-                setState(() {
-                  _selectedIndex = idx;
-                });
-              },
+            TopNavBar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onNavigate,
               onlineDevicesCount: mdns.onlineDevices.length,
               activeSyncCount: syncService.folders.length,
               activeTransfersCount: chunkTransfer.activeTransfers.length,
               localDeviceName: settings.deviceName,
               localIp: mdns.devices.isNotEmpty ? mdns.devices.first.ip : '127.0.0.1',
+              isSyncingAny: syncService.isSyncingAny,
             ),
-            Expanded(
-              child: Column(
-                children: [
-                  // Barra de Atalho Superior com botão "Home / Visão Geral"
-                  Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF13171D) : Colors.white,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDark ? const Color(0xFF21262D) : const Color(0xFFE2E8F0),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton.icon(
-                          onPressed: () => _onNavigate(5),
-                          icon: Icon(
-                            Icons.dashboard_outlined,
-                            size: 18,
-                            color: _selectedIndex == 5 ? const Color(0xFF0078D4) : null,
-                          ),
-                          label: Text(
-                            'Visão Geral (Home)',
-                            style: TextStyle(
-                              fontWeight: _selectedIndex == 5 ? FontWeight.bold : FontWeight.normal,
-                              color: _selectedIndex == 5 ? const Color(0xFF0078D4) : null,
-                            ),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            if (syncService.isSyncingAny)
-                              Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0078D4).withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 12,
-                                      height: 12,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Sincronizando pastas...',
-                                      style: TextStyle(fontSize: 12, color: Color(0xFF0078D4)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            IconButton(
-                              icon: const Icon(Icons.settings_outlined, size: 20),
-                              tooltip: 'Configurações',
-                              onPressed: () => _onNavigate(4),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(child: currentBody),
-                ],
-              ),
-            ),
+            Expanded(child: currentBody),
           ],
         ),
       );

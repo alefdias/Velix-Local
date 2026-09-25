@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Velix Local
+GenericName=File Sync & Share
+Comment=Sincronize arquivos na mesma rede local sem nuvem
+Exec=/usr/bin/velix-local %U
+Icon=velix-local
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;Utility;
+Keywords=sync;p2p;local;file;share;transfer;
+StartupNotify=true

@@ -43,16 +43,63 @@ jobs:
       - name: Compilar Linux Release
         run: flutter build linux --release
 
-      - name: Empacotar Binário Linux
+      - name: Empacotar Linux (.deb para Ubuntu, .rpm para Fedora, .tar.gz universal)
         run: |
           mkdir -p dist
+          # 1. Empacotar TAR.GZ portátil universal
           tar -czvf dist/velix-local-linux-x64.tar.gz -C build/linux/x64/release/bundle .
 
-      - name: Upload Artefato Linux
+          # 2. Preparar estrutura de instalação para DEB e RPM (/opt/velix-local)
+          mkdir -p pkg_root/opt/velix-local
+          cp -r build/linux/x64/release/bundle/* pkg_root/opt/velix-local/
+
+          mkdir -p pkg_root/usr/bin
+          cp packaging/linux/velix-local-bin pkg_root/usr/bin/velix-local
+          chmod +x pkg_root/usr/bin/velix-local
+
+          mkdir -p pkg_root/usr/share/applications
+          cp packaging/linux/velix-local.desktop pkg_root/usr/share/applications/
+
+          mkdir -p pkg_root/usr/share/icons/hicolor/256x256/apps
+          cp packaging/linux/velix-local.png pkg_root/usr/share/icons/hicolor/256x256/apps/
+
+          # 3. Gerar pacote DEB para Ubuntu / Debian
+          mkdir -p pkg_deb/DEBIAN
+          cp -r pkg_root/* pkg_deb/
+          cat << 'EOF' > pkg_deb/DEBIAN/control
+Package: velix-local
+Version: 1.0.5
+Section: net
+Priority: optional
+Architecture: amd64
+Maintainer: Alef Dias <contato@velixlocal.org>
+Description: Velix Local - Sincronizacao P2P sem nuvem
+ Aplicativo de sincronizacao e transferencia em rede local para Ubuntu e Debian.
+Depends: libgtk-3-0, libsqlite3-0
+EOF
+          dpkg-deb --build pkg_deb dist/velix-local-ubuntu-amd64.deb
+
+          # 4. Gerar pacote RPM para Fedora / RHEL
+          sudo apt-get install -y ruby ruby-dev rubygems build-essential rpm
+          sudo gem install --no-document fpm
+          fpm -s dir -t rpm \
+            -n velix-local \
+            -v 1.0.5 \
+            -a x86_64 \
+            --description "Velix Local - Sincronizacao P2P sem nuvem" \
+            -m "Alef Dias <contato@velixlocal.org>" \
+            -d "gtk3" \
+            -p dist/velix-local-fedora-x86_64.rpm \
+            -C pkg_root .
+
+      - name: Upload Artefatos Linux (.deb, .rpm, .tar.gz)
         uses: actions/upload-artifact@v4
         with:
-          name: velix-local-linux-x64
-          path: dist/velix-local-linux-x64.tar.gz
+          name: velix-local-linux-packages
+          path: |
+            dist/velix-local-ubuntu-amd64.deb
+            dist/velix-local-fedora-x86_64.rpm
+            dist/velix-local-linux-x64.tar.gz
 
   # =============================================================
   # BUILD WINDOWS DESKTOP
@@ -143,10 +190,10 @@ jobs:
       - name: Checkout Código
         uses: actions/checkout@v4
 
-      - name: Baixar Artefato Linux
+      - name: Baixar Artefatos Linux (.deb, .rpm, .tar.gz)
         uses: actions/download-artifact@v4
         with:
-          name: velix-local-linux-x64
+          name: velix-local-linux-packages
           path: release-assets
 
       - name: Baixar Artefato Windows
@@ -175,11 +222,15 @@ jobs:
             Software de sincronização e transferência inteligente peer-to-peer (P2P) entre dispositivos na mesma rede local, 100% offline, sem nuvem e sem servidor externo.
 
             ### 📦 Binários Oficiais Disponíveis:
-            * **Windows:** `velix-local-windows-x64.zip` (Executável .exe portátil)
-            * **Linux:** `velix-local-linux-x64.tar.gz` (Binário nativo para Linux x64)
-            * **Android:** `velix-local-android.apk` (Instalador universal Android)
+            * 🎩 **Fedora / RHEL / CentOS:** `velix-local-fedora-x86_64.rpm` (Instalação nativa via DNF ou clique duplo)
+            * 🐧 **Ubuntu / Debian / Mint:** `velix-local-ubuntu-amd64.deb` (Instalação nativa via APT ou clique duplo)
+            * 📦 **Linux Universal:** `velix-local-linux-x64.tar.gz` (Executável portátil para qualquer distro)
+            * 🪟 **Windows:** `velix-local-windows-x64.zip` (Executável .exe portátil)
+            * 🤖 **Android:** `velix-local-android.apk` (Instalador universal Android)
 
             ### ✨ Recursos Inclusos:
+            - **Novo Layout Desktop:** Menu moderno no topo com ícone em cima e nome embaixo.
+            - **Design Clean Slate:** Fundo do aplicativo em cinza sofisticado e menus em branco puro.
             - **Velix Sync:** Sincronização contínua e bidirecional de pastas locais.
             - **Retomada de Transferência (Chunking):** Continua do bloco seguinte sem reiniciar do zero.
             - **Descoberta Automática:** mDNS e varredura ativa de sub-rede corporativa.
