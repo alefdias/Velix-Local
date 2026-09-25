@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.alefdias.VelixLocal</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Velix Local</name>
+  <summary>Compartilhamento e sincronização ultra-rápida de arquivos na rede local</summary>
+
+  <description>
+    <p>
+      O Velix Local é um aplicativo moderno de transferência e sincronização inteligente ponto a ponto (P2P) entre dispositivos na mesma rede local (Wi-Fi e Ethernet), 100% offline, sem nuvem e sem servidores externos.
+    </p>
+    <p>Principais recursos:</p>
+    <ul>
+      <li>Transferência com velocidade máxima gigabit sem depender de internet</li>
+      <li>Conexão direta sem códigos PIN ou burocracia</li>
+      <li>Velix Sync: sincronização contínua e bidirecional de pastas locais</li>
+      <li>Retomada inteligente de transferência por blocos (Chunking)</li>
+      <li>Velix Deploy: distribuição e instalação corporativa remota</li>
+      <li>Total privacidade: seus arquivos nunca saem da sua rede local</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.alefdias.VelixLocal.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/alefdias/Velix-Local/main/web%20velix/logo.png</image>
+      <caption>Tela inicial e transferência do Velix Local</caption>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/alefdias/Velix-Local</url>
+  <url type="bugtracker">https://github.com/alefdias/Velix-Local/issues</url>
+  <url type="vcs-browser">https://github.com/alefdias/Velix-Local</url>
+
+  <categories>
+    <category>Network</category>
+    <category>FileTransfer</category>
+    <category>Utility</category>
+  </categories>
+
+  <provides>
+    <binary>velix-local</binary>
+  </provides>
+
+  <releases>
+    <release version="1.0.8" date="2026-09-25">
+      <description>
+        <p>Versão oficial 1.0.8:</p>
+        <ul>
+          <li>Abertura direta de arquivos e pastas com um único clique</li>
+          <li>Suporte a downloads públicos no Android</li>
+          <li>Novo portal web com links rápidos</li>
+          <li>Auditoria e blindagem de segurança</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+</component>

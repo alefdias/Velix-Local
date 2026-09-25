@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Velix Local
+GenericName=Compartilhamento de Arquivos Local
+Comment=Transfira e sincronize arquivos em alta velocidade na rede local sem nuvem
+Exec=velix-local
+Icon=io.github.alefdias.VelixLocal
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;Utility;
+Keywords=P2P;Transfer;Local;Share;Sync;Velix;
+StartupWMClass=velix-local
