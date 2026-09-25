@@ -103,18 +103,19 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Dar permissão de execução ao Gradle
-        run: chmod +x android/gradlew
+          cache: 'gradle'
 
       - name: Configurar Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
+
+      - name: Dar permissão de execução ao Gradle
+        run: chmod +x android/gradlew
+
+      - name: Aceitar Licenças do Android SDK
+        run: yes | flutter doctor --android-licenses || true
 
       - name: Obter Dependências
         run: flutter pub get
