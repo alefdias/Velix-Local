@@ -1,0 +1,59 @@
+name: "Security Analysis (CodeQL & Semgrep)"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '30 2 * * 1' # Executa semanalmente às segundas-feiras
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ==========================================================
+  # 1. ANÁLISE ESTÁTICA COM GITHUB CODEQL
+  # ==========================================================
+  codeql-analysis:
+    name: CodeQL Security Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript, actions
+          queries: security-extended,security-and-quality
+
+      - name: Executar Análise CodeQL
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-actions"
+
+  # ==========================================================
+  # 2. ANÁLISE DE SEGURANÇA GERAL COM SEMGREP (OWASP & VULNERABILIDADES)
+  # ==========================================================
+  semgrep-scan:
+    name: Semgrep Vulnerability Scanner
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Executar Auditoria de Segurança Semgrep
+        run: |
+          semgrep scan --config auto --sarif --output semgrep.sarif || true
+
+      - name: Enviar Resultados para a Aba Security (Code Scanning)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: "semgrep"
