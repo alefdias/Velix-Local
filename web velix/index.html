@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velix Local — Compartilhamento de Arquivos Ultra-rápido na Rede Local</title>
+  <meta name="description" content="Baixe o Velix Local com 1 clique para Android, Windows, Fedora, Ubuntu e Linux. Transferência de arquivos em altíssima velocidade na rede local sem depender de nuvem ou internet.">
+  <meta name="keywords" content="Velix Local, transferência de arquivos, rede local, P2P, Android APK, Windows, Fedora RPM, Ubuntu DEB, open-source, AirDrop alternativa">
+  <meta name="theme-color" content="#0078D4">
+
+  <!-- Open Graph / Redes Sociais -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Velix Local — Downloads Rápidos e Transferência LAN">
+  <meta property="og:description" content="Transfira gigabytes em segundos na sua rede local com conexão direta e total privacidade.">
+  <meta property="og:image" content="logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Estilos Oficiais -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==================== HEADER / MENU SUPERIOR ==================== -->
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <!-- Marca / Logo -->
+        <a href="#" class="brand">
+          <div class="brand-logo">
+            <img src="logo.png" alt="Velix Local Logo" width="32" height="32">
+          </div>
+          <div class="brand-text">
+            <h1>Velix Local</h1>
+            <p>P2P Local Network Transfer</p>
+          </div>
+        </a>
+
+        <!-- Links de Navegação -->
+        <ul class="nav-links">
+          <li><a href="#downloads" class="nav-link">Downloads</a></li>
+          <li><a href="#features" class="nav-link">Recursos</a></li>
+          <li><a href="#how-it-works" class="nav-link">Como Funciona</a></li>
+          <li><a href="https://github.com/alefdias/Velix-Local" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a></li>
+        </ul>
+
+        <!-- Ações do Cabeçalho -->
+        <div class="nav-actions">
+          <!-- Alternador de Tema -->
+          <button id="theme-toggle" class="btn-theme-toggle" aria-label="Alternar tema claro/escuro" title="Alternar tema">
+            <span id="theme-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </span>
+          </button>
+
+          <!-- Botão CTA Superior -->
+          <a href="#downloads" class="btn btn-primary btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero">
+    <div class="container">
+      <!-- Badge de Versão Atual Dinâmica -->
+      <div class="hero-badge">
+        <span class="status-dot"></span>
+        <span>Versão Oficial <strong class="release-version-tag">v1.0.7</strong> • Código Aberto</span>
+      </div>
+
+      <!-- Título Principal -->
+      <h2 class="hero-title">
+        Compartilhe Arquivos na Rede Local<br>
+        <span class="gradient-text">Com Velocidade Máxima e 1 Clique</span>
+      </h2>
+
+      <!-- Subtítulo -->
+      <p class="hero-subtitle">
+        Envie vídeos pesados, pastas com milhares de itens ou faça deploy corporativo instantâneo via Wi-Fi e Ethernet. Sem internet, sem cadastros, sem complicação.
+      </p>
+
+      <!-- Ações Hero com Detecção Inteligente do Sistema -->
+      <div class="hero-actions">
+        <a id="hero-download-btn" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-android.apk" class="btn btn-primary" download>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="hero-btn-text">Baixar para seu Sistema (<span class="release-version-tag">v1.0.7</span>)</span>
+        </a>
+
+        <a href="#downloads" class="btn btn-secondary">
+          Ver Todas as Versões
+        </a>
+      </div>
+
+      <!-- Indicador de Sistema Detectado -->
+      <p class="detected-os-label" id="detected-os-text">
+        Detectando seu sistema operacional...
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== SEÇÃO DE DOWNLOADS RÁPIDOS ==================== -->
+  <section class="downloads-section" id="downloads">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">DOWNLOAD DIRETO DO GITHUB</span>
+        <h2 class="section-title">Baixe com 1 Único Clique</h2>
+        <p class="section-subtitle">
+          Sem telas intermediárias ou anúncios. Os links abaixo apontam diretamente para as compilações oficiais da última release.
+        </p>
+      </div>
+
+      <!-- Grid de Cards de Download -->
+      <div class="downloads-grid">
+
+        <!-- 1. ANDROID APK -->
+        <div class="download-card" id="card-android">
+          <span class="card-badge">Mobile & TV</span>
+          <div class="platform-icon android">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+          </div>
+          <h3>Android</h3>
+          <p>Para smartphones, tablets e Android TV. Permite receber e enviar fotos, vídeos e arquivos direto do celular.</p>
+          <div class="file-info">
+            <span class="file-ext">.apk</span>
+            <span id="size-android">~38 MB</span>
+          </div>
+          <a id="btn-download-android" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-android.apk" class="btn btn-primary btn-full" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar APK
+          </a>
+        </div>
+
+        <!-- 2. WINDOWS 64-BIT -->
+        <div class="download-card" id="card-windows">
+          <span class="card-badge">Desktop PC</span>
+          <div class="platform-icon windows">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="8" height="8"></rect>
+              <rect x="13" y="3" width="8" height="8"></rect>
+              <rect x="3" y="13" width="8" height="8"></rect>
+              <rect x="13" y="13" width="8" height="8"></rect>
+            </svg>
+          </div>
+          <h3>Windows (x64)</h3>
+          <p>Compatível com Windows 10 e Windows 11. Pacote portátil de alta velocidade, pronto para descompactar e rodar.</p>
+          <div class="file-info">
+            <span class="file-ext">.zip</span>
+            <span id="size-windows">~18 MB</span>
+          </div>
+          <a id="btn-download-windows" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-windows-x64.zip" class="btn btn-primary btn-full" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar para Windows
+          </a>
+        </div>
+
+        <!-- 3. FEDORA LINUX (.RPM) -->
+        <div class="download-card" id="card-fedora">
+          <span class="card-badge">Red Hat / Fedora</span>
+          <div class="platform-icon fedora">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <h3>Fedora (.rpm)</h3>
+          <p>Pacote nativo pré-compilado para Fedora, RHEL, AlmaLinux e CentOS com atalho no menu de aplicativos.</p>
+          <div class="file-info">
+            <span class="file-ext">.rpm</span>
+            <span id="size-fedora">~15 MB</span>
+          </div>
+          <a id="btn-download-fedora" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-fedora-x86_64.rpm" class="btn btn-primary btn-full" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar Pacote RPM
+          </a>
+          <div class="install-command">sudo dnf install ./velix-local-fedora-x86_64.rpm</div>
+        </div>
+
+        <!-- 4. UBUNTU / DEBIAN (.DEB) -->
+        <div class="download-card" id="card-ubuntu">
+          <span class="card-badge">Ubuntu / Debian / Mint</span>
+          <div class="platform-icon ubuntu">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+              <path d="M2 12h20"></path>
+            </svg>
+          </div>
+          <h3>Ubuntu (.deb)</h3>
+          <p>Instalador oficial DEB para Ubuntu 20.04/22.04/24.04, Debian, Linux Mint, Zorin OS e Pop!_OS.</p>
+          <div class="file-info">
+            <span class="file-ext">.deb</span>
+            <span id="size-ubuntu">~15 MB</span>
+          </div>
+          <a id="btn-download-ubuntu" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-ubuntu-amd64.deb" class="btn btn-primary btn-full" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar Pacote DEB
+          </a>
+          <div class="install-command">sudo apt install ./velix-local-ubuntu-amd64.deb</div>
+        </div>
+
+        <!-- 5. LINUX UNIVERSAL (.TAR.GZ) -->
+        <div class="download-card" id="card-linux">
+          <span class="card-badge">Qualquer Distribuição</span>
+          <div class="platform-icon linux">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 17l6-6-6-6"></path>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+          </div>
+          <h3>Linux Universal</h3>
+          <p>Binário autocontido portátil compatível com Arch Linux, Manjaro, openSUSE, Alpine e Void Linux.</p>
+          <div class="file-info">
+            <span class="file-ext">.tar.gz</span>
+            <span id="size-linux">~15 MB</span>
+          </div>
+          <a id="btn-download-linux" href="https://github.com/alefdias/Velix-Local/releases/latest/download/velix-local-linux-x64.tar.gz" class="btn btn-primary btn-full" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Baixar Tarball
+          </a>
+          <div class="install-command">tar -xzf velix-local-linux-x64.tar.gz && ./velix-local</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== RECURSOS EM DESTAQUE ==================== -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">POR QUE USAR O VELIX LOCAL?</span>
+        <h2 class="section-title">Construído para Performance e Simplicidade</h2>
+        <p class="section-subtitle">
+          Projetado desde o início com foco em velocidade de rede pura, usabilidade intuitiva e segurança total.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">⚡</div>
+          <h4>Velocidade Gigabit Real</h4>
+          <p>Transfere direto de placa de rede para placa de rede, usando chunking inteligente para saturar sua banda Wi-Fi 6 ou cabo Ethernet sem gargalos de internet.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">🔒</div>
+          <h4>100% Privado e Seguro</h4>
+          <p>Nenhum byte passa por servidores externos ou pela nuvem. Todos os dados permanecem estritamente dentro da sua rede local (LAN).</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">🎯</div>
+          <h4>Conexão Direta Sem PIN</h4>
+          <p>Basta abrir o aplicativo para que todos os dispositivos na mesma rede se vejam instantaneamente. Selecione o arquivo e envie em 1 toque.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">🏢</div>
+          <h4>Velix Deploy Corporativo</h4>
+          <p>Módulo especial para administradores de TI: distribua e instale o Velix Local remotamente em todos os computadores da empresa com um só clique.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">💻</div>
+          <h4>Interface Moderna Desktop & Mobile</h4>
+          <p>Menu horizontal superior elegante para PC e navegação suave no celular, com paleta sofisticada em tons de cinza e branco.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-box">
+          <div class="feature-icon-wrapper">🌐</div>
+          <h4>Multiplataforma Completa</h4>
+          <p>Compatibilidade nativa entre Android, Windows, Fedora (.rpm), Ubuntu (.deb) e distribuições Linux genéricas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== COMO FUNCIONA ==================== -->
+  <section class="how-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">PASSO A PASSO</span>
+        <h2 class="section-title">Como Transferir em 3 Segundos</h2>
+        <p class="section-subtitle">Sem cadastros, sem criação de conta e sem configurações complicadas.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h4>Abra o Velix</h4>
+          <p>Inicie o aplicativo no seu computador ou celular conectado na mesma rede Wi-Fi ou cabo.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h4>Escolha os Arquivos</h4>
+          <p>Arraste arquivos, pastas inteiras ou clique em enviar para selecionar os destinatários detectados.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h4>Transferência Imediata</h4>
+          <p>O arquivo é transmitido em alta velocidade e salvo automaticamente na pasta de downloads.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BANNER FINAL CTA ==================== -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Pronto para Revolucionar suas Transferências?</h2>
+        <p>Baixe agora o Velix Local gratuitamente e experimente a velocidade de transferir arquivos sem passar pela internet.</p>
+        <a href="#downloads" class="btn btn-white">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Escolher Minha Versão
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== RODAPÉ ==================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="logo.png" alt="Velix Local Logo" width="28" height="28">
+          </div>
+          <div>
+            <strong>Velix Local</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Transferência Local de Arquivos de Alta Performance</p>
+          </div>
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="#downloads">Downloads</a></li>
+          <li><a href="#features">Recursos</a></li>
+          <li><a href="https://github.com/alefdias/Velix-Local" target="_blank" rel="noopener noreferrer">Repositório GitHub</a></li>
+          <li><a href="https://github.com/alefdias/Velix-Local/releases" target="_blank" rel="noopener noreferrer">Todas as Releases</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Velix Local. Projeto de código aberto sob licença MIT.</div>
+        <div>Desenvolvido com foco em privacidade e rapidez.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lógica JavaScript (Detecção de SO, API GitHub, 1-Click Downloads) -->
+  <script src="app.js"></script>
+</body>
+</html>
