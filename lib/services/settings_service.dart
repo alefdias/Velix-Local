@@ -14,7 +14,7 @@ class SettingsService extends ChangeNotifier {
   int _httpPort = 53318;
   final int _discoveryPort = 53317;
   String _downloadDirectory = '';
-  String _themeMode = 'dark'; // 'system', 'light', 'dark'
+  String _themeMode = 'light'; // 'system', 'light', 'dark'
   bool _autoSyncEnabled = true;
   bool _isInitialized = false;
 
@@ -74,8 +74,11 @@ class SettingsService extends ChangeNotifier {
 
     // Theme Mode
     final storedTheme = await db.getSetting('theme_mode');
-    if (storedTheme != null) {
-      _themeMode = storedTheme;
+    if (storedTheme != null && storedTheme == 'system') {
+      _themeMode = 'system';
+    } else {
+      _themeMode = 'light';
+      await db.setSetting('theme_mode', 'light');
     }
 
     // Auto Sync
