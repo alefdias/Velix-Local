@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:open_filex/open_filex.dart';
 
 import '../models/transfer.dart';
 import '../services/database_service.dart';
+import '../services/settings_service.dart';
+import '../services/file_action_service.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -73,17 +74,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ],
                 ),
-                if (_history.isNotEmpty)
-                  OutlinedButton.icon(
-                    onPressed: _confirmClearHistory,
-                    icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-                    label: const Text('Limpar Histórico'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                      side: const BorderSide(color: Colors.redAccent),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => FileActionService.openFolder(SettingsService.instance.downloadDirectory, context),
+                      icon: const Icon(Icons.folder_open_rounded, size: 18),
+                      label: const Text('Pasta de Downloads'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                        side: BorderSide(
+                          color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
-                  ),
+                    if (_history.isNotEmpty)
+                      OutlinedButton.icon(
+                        onPressed: _confirmClearHistory,
+                        icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                        label: const Text('Limpar Histórico'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(color: Colors.redAccent),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
 
@@ -176,82 +195,125 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               }
                             }
 
+                            final fileExists = item.localFilePath != null && File(item.localFilePath!).existsSync();
+
                             return Container(
                               margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark ? const Color(0xFF1E242C) : Colors.white,
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  // Ícone de Direção
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: item.isIncoming
-                                          ? const Color(0xFF10B981).withOpacity(0.12)
-                                          : const Color(0xFF0078D4).withOpacity(0.12),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Center(
-                                      child: Icon(
-                                        item.isIncoming
-                                            ? Icons.download_rounded
-                                            : Icons.upload_rounded,
-                                        color: item.isIncoming
-                                            ? const Color(0xFF10B981)
-                                            : const Color(0xFF0078D4),
-                                        size: 24,
-                                      ),
-                                    ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  const SizedBox(width: 16),
-
-                                  // Detalhes do Arquivo
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () => FileActionService.showTransferDetailsModal(context, item),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          item.fileName,
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
+                                        // Ícone de Direção
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            color: item.isIncoming
+                                                ? const Color(0xFF10B981).withOpacity(0.12)
+                                                : const Color(0xFF0078D4).withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                          child: Center(
+                                            child: Icon(
+                                              item.isIncoming
+                                                  ? Icons.download_rounded
+                                                  : Icons.upload_rounded,
+                                              color: item.isIncoming
+                                                  ? const Color(0xFF10B981)
+                                                  : const Color(0xFF0078D4),
+                                              size: 24,
+                                            ),
+                                          ),
                                         ),
-                                        const SizedBox(height: 4),
-                                        Row(
+                                        const SizedBox(width: 16),
+
+                                        // Detalhes do Arquivo
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.fileName,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    '${item.sourceDevice} → ${item.targetDevice}',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: isDark
+                                                          ? const Color(0xFF94A3B8)
+                                                          : const Color(0xFF64748B),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    '•',
+                                                    style: TextStyle(
+                                                      color: isDark
+                                                          ? const Color(0xFF64748B)
+                                                          : const Color(0xFF94A3B8),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    formattedDate,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: isDark
+                                                          ? const Color(0xFF94A3B8)
+                                                          : const Color(0xFF64748B),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Métricas: Tamanho, Velocidade, Duração
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
                                             Text(
-                                              '${item.sourceDevice} → ${item.targetDevice}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark
-                                                    ? const Color(0xFF94A3B8)
-                                                    : const Color(0xFF64748B),
+                                              item.formattedFileSize,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(height: 3),
                                             Text(
-                                              '•',
+                                              '${item.formattedSpeed} • $durationText',
                                               style: TextStyle(
-                                                color: isDark
-                                                    ? const Color(0xFF64748B)
-                                                    : const Color(0xFF94A3B8),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              formattedDate,
-                                              style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 color: isDark
                                                     ? const Color(0xFF94A3B8)
                                                     : const Color(0xFF64748B),
@@ -259,71 +321,54 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                             ),
                                           ],
                                         ),
+                                        const SizedBox(width: 12),
+
+                                        // Botão Ação Rápida 1: Abrir Arquivo
+                                        if (fileExists)
+                                          IconButton(
+                                            icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                                            tooltip: 'Abrir Arquivo',
+                                            color: const Color(0xFF0078D4),
+                                            onPressed: () => FileActionService.openFile(item.localFilePath!, context),
+                                          ),
+
+                                        // Botão Ação Rápida 2: Abrir Pasta
+                                        IconButton(
+                                          icon: const Icon(Icons.folder_open_rounded, size: 20),
+                                          tooltip: 'Abrir Pasta',
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                          onPressed: () => FileActionService.openFolder(
+                                            item.localFilePath ?? SettingsService.instance.downloadDirectory,
+                                            context,
+                                          ),
+                                        ),
+
+                                        const SizedBox(width: 6),
+
+                                        // Status Badge
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: item.status == TransferStatus.completed
+                                                ? const Color(0xFF10B981).withOpacity(0.12)
+                                                : Colors.redAccent.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            item.status.displayName,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: item.status == TransferStatus.completed
+                                                  ? const Color(0xFF10B981)
+                                                  : Colors.redAccent,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-
-                                  // Métricas: Tamanho, Velocidade, Duração
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        item.formattedFileSize,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        '${item.formattedSpeed} • $durationText',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark
-                                              ? const Color(0xFF94A3B8)
-                                              : const Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 16),
-
-                                  // Status Badge
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: item.status == TransferStatus.completed
-                                          ? const Color(0xFF10B981).withOpacity(0.12)
-                                          : Colors.redAccent.withOpacity(0.12),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      item.status.displayName,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: item.status == TransferStatus.completed
-                                            ? const Color(0xFF10B981)
-                                            : Colors.redAccent,
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Ação de Abrir Arquivo
-                                  if (item.localFilePath != null &&
-                                      File(item.localFilePath!).existsSync()) ...[
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: const Icon(Icons.open_in_new, size: 18),
-                                      tooltip: 'Abrir Arquivo',
-                                      onPressed: () {
-                                        try {
-                                          OpenFilex.open(item.localFilePath!);
-                                        } catch (_) {}
-                                      },
-                                    ),
-                                  ],
-                                ],
+                                ),
                               ),
                             );
                           },

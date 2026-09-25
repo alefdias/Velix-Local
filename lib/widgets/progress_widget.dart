@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/transfer.dart';
+import '../services/settings_service.dart';
+import '../services/file_action_service.dart';
 
 class ProgressWidget extends StatelessWidget {
   final TransferItem item;
@@ -21,7 +24,6 @@ class ProgressWidget extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E242C) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -39,10 +41,20 @@ class ProgressWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Nome do Arquivo + Direção + Ação
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: item.status == TransferStatus.completed
+              ? () => FileActionService.showTransferDetailsModal(context, item)
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nome do Arquivo + Direção + Ação
           Row(
             children: [
               Container(
@@ -186,7 +198,7 @@ class ProgressWidget extends StatelessWidget {
           ),
 
           // Exibição dos blocos de chunk
-          if (item.totalChunks > 1) ...[
+          if (item.totalChunks > 1 && item.status == TransferStatus.transferring) ...[
             const SizedBox(height: 6),
             Text(
               'Bloco ${item.completedChunks} de ${item.totalChunks} (Recuperável automaticamente)',
@@ -197,8 +209,66 @@ class ProgressWidget extends StatelessWidget {
               ),
             ),
           ],
+
+          // Painel de Ações Rápidas quando Concluído
+          if (item.status == TransferStatus.completed) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 10),
+            if (item.localFilePath != null && item.localFilePath!.isNotEmpty) ...[
+              Text(
+                'Salvo em: ${item.localFilePath}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+            ],
+            Row(
+              children: [
+                if (item.localFilePath != null && File(item.localFilePath!).existsSync()) ...[
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => FileActionService.openFile(item.localFilePath!, context),
+                      icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                      label: const Text('Abrir Arquivo'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0078D4),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => FileActionService.openFolder(
+                      item.localFilePath ?? SettingsService.instance.downloadDirectory,
+                      context,
+                    ),
+                    icon: const Icon(Icons.folder_open_rounded, size: 16),
+                    label: const Text('Abrir Pasta'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
-    );
-  }
+    ),
+  ),
+),
+);
+}
 }

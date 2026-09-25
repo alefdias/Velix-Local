@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/mdns_service.dart';
 import '../services/sync_service.dart';
 import '../services/settings_service.dart';
 import '../services/database_service.dart';
+import '../services/chunk_transfer_service.dart';
+import '../services/file_action_service.dart';
 import '../models/transfer.dart';
 import '../widgets/device_card.dart';
 import '../widgets/sync_card.dart';
@@ -139,22 +142,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => mdns.triggerManualScan(),
-                    icon: mdns.isSearching
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.refresh_rounded, size: 18),
-                    label: Text(mdns.isSearching ? 'Procurando...' : 'Buscar Rede'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0078D4),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
+                        icon: const Icon(Icons.folder_open_rounded, size: 18),
+                        label: const Text('Downloads'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                          side: BorderSide(
+                            color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => mdns.triggerManualScan(),
+                        icon: mdns.isSearching
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.refresh_rounded, size: 18),
+                        label: Text(mdns.isSearching ? 'Buscando...' : 'Buscar Rede'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0078D4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -287,13 +309,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Seção: Últimas Atividades
             if (_recentTransfers.isNotEmpty) ...[
-              const Text(
-                'Últimas Atividades',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.3,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Últimas Atividades',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => widget.onNavigate(4),
+                    icon: const Icon(Icons.history_rounded, size: 16),
+                    label: const Text('Ver Histórico'),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               ListView.builder(
@@ -302,60 +334,123 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: _recentTransfers.length,
                 itemBuilder: (ctx, i) {
                   final t = _recentTransfers[i];
+                  final fileExists = t.localFilePath != null && File(t.localFilePath!).existsSync();
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E242C) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          t.isIncoming ? Icons.download_rounded : Icons.upload_rounded,
-                          size: 20,
-                          color: t.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => FileActionService.showTransferDetailsModal(context, t),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
                             children: [
-                              Text(
-                                t.fileName,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              // Ícone do tipo de arquivo / direção
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: t.isIncoming
+                                      ? const Color(0xFF10B981).withOpacity(0.12)
+                                      : const Color(0xFF0078D4).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    t.isIncoming ? Icons.download_rounded : Icons.upload_rounded,
+                                    size: 20,
+                                    color: t.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4),
+                                  ),
+                                ),
                               ),
-                              Text(
-                                '${t.sourceDevice} → ${t.targetDevice} • ${t.formattedFileSize}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              const SizedBox(width: 14),
+
+                              // Informações do Arquivo
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      t.fileName,
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${t.sourceDevice} → ${t.targetDevice} • ${t.formattedFileSize}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Botão Ação Rápida 1: Abrir Arquivo (se existir)
+                              if (fileExists)
+                                IconButton(
+                                  icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                                  tooltip: 'Abrir Arquivo',
+                                  color: const Color(0xFF0078D4),
+                                  onPressed: () => FileActionService.openFile(t.localFilePath!, context),
+                                ),
+
+                              // Botão Ação Rápida 2: Abrir Pasta
+                              IconButton(
+                                icon: const Icon(Icons.folder_open_rounded, size: 20),
+                                tooltip: 'Abrir Pasta',
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                onPressed: () => FileActionService.openFolder(
+                                  t.localFilePath ?? settings.downloadDirectory,
+                                  context,
+                                ),
+                              ),
+
+                              const SizedBox(width: 4),
+
+                              // Status Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: t.status == TransferStatus.completed
+                                      ? const Color(0xFF10B981).withOpacity(0.12)
+                                      : Colors.orange.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  t.status.displayName,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: t.status == TransferStatus.completed
+                                        ? const Color(0xFF10B981)
+                                        : Colors.orange,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            t.status.displayName,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF10B981),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },

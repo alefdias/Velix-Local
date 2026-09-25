@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/settings_service.dart';
+import '../services/file_action_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -76,23 +77,45 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.download_for_offline_outlined, color: Color(0xFF10B981)),
+                  leading: const Icon(Icons.download_for_offline_outlined, color: Color(0xFF10B981), size: 28),
                   title: const Text('Pasta de Downloads', style: TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(
                     settings.downloadDirectory.isNotEmpty
                         ? settings.downloadDirectory
                         : 'Padrão do Sistema',
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
                   ),
-                  trailing: OutlinedButton(
-                    onPressed: () async {
-                      final path = await FilePicker.platform.getDirectoryPath();
-                      if (path != null) {
-                        settings.setDownloadDirectory(path);
-                      }
-                    },
-                    child: const Text('Mudar Pasta'),
+                  trailing: Wrap(
+                    spacing: 8,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
+                        icon: const Icon(Icons.folder_open_rounded, size: 16),
+                        label: const Text('Abrir'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0078D4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () async {
+                          final path = await FilePicker.platform.getDirectoryPath();
+                          if (path != null) {
+                            settings.setDownloadDirectory(path);
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Mudar'),
+                      ),
+                    ],
                   ),
                 ),
               ],

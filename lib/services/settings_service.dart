@@ -54,20 +54,13 @@ class SettingsService extends ChangeNotifier {
       _httpPort = int.tryParse(storedPort) ?? 53318;
     }
 
-    // Download Directory
+    // Download Directory - Garantir pasta pública visível pelo usuário
     var storedDownloadDir = await db.getSetting('download_dir');
-    if (storedDownloadDir == null || storedDownloadDir.isEmpty) {
-      try {
-        final downloads = await getDownloadsDirectory();
-        if (downloads != null) {
-          storedDownloadDir = downloads.path;
-        } else {
-          final docs = await getApplicationDocumentsDirectory();
-          storedDownloadDir = docs.path;
-        }
-      } catch (_) {
-        storedDownloadDir = Directory.current.path;
-      }
+    bool isInvalidAndroidPath = Platform.isAndroid &&
+        (storedDownloadDir != null && (storedDownloadDir.contains('/data/user/0') || storedDownloadDir.contains('app_flutter')));
+
+    if (storedDownloadDir == null || storedDownloadDir.isEmpty || isInvalidAndroidPath) {
+      storedDownloadDir = await _resolveDefaultDownloadDirectory();
       await db.setSetting('download_dir', storedDownloadDir);
     }
     _downloadDirectory = storedDownloadDir;
@@ -109,6 +102,63 @@ class SettingsService extends ChangeNotifier {
       }
     } catch (_) {}
     return Platform.localHostname.isNotEmpty ? Platform.localHostname : 'Velix Node';
+  }
+
+  Future<String> _resolveDefaultDownloadDirectory() async {
+    // 1. Android: Salvar diretamente na pasta pública Downloads do dispositivo
+    if (Platform.isAndroid) {
+      try {
+        final publicDownloadDir = Directory('/storage/emulated/0/Download/VelixLocal');
+        if (!publicDownloadDir.existsSync()) {
+          publicDownloadDir.createSync(recursive: true);
+        }
+        return publicDownloadDir.path;
+      } catch (_) {
+        try {
+          final rootDownload = Directory('/storage/emulated/0/Download');
+          if (rootDownload.existsSync()) {
+            return rootDownload.path;
+          }
+        } catch (_) {}
+      }
+    }
+
+    // 2. Linux: ~/Downloads
+    if (Platform.isLinux) {
+      final home = Platform.environment['HOME'];
+      if (home != null && home.isNotEmpty) {
+        final linuxDownloads = Directory('$home/Downloads');
+        if (linuxDownloads.existsSync()) {
+          return linuxDownloads.path;
+        }
+      }
+    }
+
+    // 3. Windows: %USERPROFILE%\Downloads
+    if (Platform.isWindows) {
+      final userProfile = Platform.environment['USERPROFILE'];
+      if (userProfile != null && userProfile.isNotEmpty) {
+        final winDownloads = Directory('$userProfile\\Downloads');
+        if (winDownloads.existsSync()) {
+          return winDownloads.path;
+        }
+      }
+    }
+
+    // 4. macOS / Fallback genérico via path_provider
+    try {
+      final downloads = await getDownloadsDirectory();
+      if (downloads != null && downloads.existsSync()) {
+        return downloads.path;
+      }
+    } catch (_) {}
+
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      return docs.path;
+    } catch (_) {
+      return Directory.current.path;
+    }
   }
 
   Future<void> setDeviceName(String newName) async {
