@@ -1,0 +1,9 @@
+Package: velix-local
+Version: 1.0.5
+Section: net
+Priority: optional
+Architecture: amd64
+Maintainer: Alef Dias <contato@velixlocal.org>
+Description: Velix Local - Sincronizacao P2P sem nuvem
+ Aplicativo de sincronizacao e transferencia em rede local para Ubuntu e Debian.
+Depends: libgtk-3-0, libsqlite3-0

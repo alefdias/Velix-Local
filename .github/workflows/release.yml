@@ -66,17 +66,7 @@ jobs:
           # 3. Gerar pacote DEB para Ubuntu / Debian
           mkdir -p pkg_deb/DEBIAN
           cp -r pkg_root/* pkg_deb/
-          cat << 'EOF' > pkg_deb/DEBIAN/control
-Package: velix-local
-Version: 1.0.5
-Section: net
-Priority: optional
-Architecture: amd64
-Maintainer: Alef Dias <contato@velixlocal.org>
-Description: Velix Local - Sincronizacao P2P sem nuvem
- Aplicativo de sincronizacao e transferencia em rede local para Ubuntu e Debian.
-Depends: libgtk-3-0, libsqlite3-0
-EOF
+          cp packaging/linux/control pkg_deb/DEBIAN/control
           dpkg-deb --build pkg_deb dist/velix-local-ubuntu-amd64.deb
 
           # 4. Gerar pacote RPM para Fedora / RHEL
