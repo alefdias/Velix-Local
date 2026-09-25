@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Código
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Inicializar CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@a65a038433a26f4363cf9f029e3b9ceac831ad5d # v3.28.10
         with:
           languages: javascript-typescript, actions
           queries: security-extended,security-and-quality
 
       - name: Executar Análise CodeQL
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@a65a038433a26f4363cf9f029e3b9ceac831ad5d # v3.28.10
         with:
           category: "/language:javascript-actions"
 
@@ -45,14 +45,14 @@ jobs:
       image: semgrep/semgrep
     steps:
       - name: Checkout Código
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Executar Auditoria de Segurança Semgrep
         run: |
           semgrep scan --config auto --sarif --output semgrep.sarif || true
 
       - name: Enviar Resultados para a Aba Security (Code Scanning)
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@a65a038433a26f4363cf9f029e3b9ceac831ad5d # v3.28.10
         if: always()
         with:
           sarif_file: semgrep.sarif
