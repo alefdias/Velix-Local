@@ -73,13 +73,22 @@ class Sidebar extends StatelessWidget {
     return Container(
       width: 250,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF13171D) : const Color(0xFFF8FAFC),
+        color: isDark ? const Color(0xFF13171D) : Colors.white,
         border: Border(
           right: BorderSide(
             color: isDark ? const Color(0xFF21262D) : const Color(0xFFE2E8F0),
             width: 1,
           ),
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 8,
+                  offset: const Offset(2, 0),
+                ),
+              ],
       ),
       child: Column(
         children: [
@@ -234,7 +243,7 @@ class Sidebar extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E242C) : Colors.white,
+              color: isDark ? const Color(0xFF1E242C) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),

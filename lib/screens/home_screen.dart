@@ -69,14 +69,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 gradient: LinearGradient(
                   colors: isDark
                       ? [const Color(0xFF161F2E), const Color(0xFF131822)]
-                      : [const Color(0xFFE8F3FF), const Color(0xFFF1F5F9)],
+                      : [Colors.white, const Color(0xFFF8FAFC)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF1F2937) : const Color(0xFFDBEAFE),
+                  color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0),
+                  width: 1.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [

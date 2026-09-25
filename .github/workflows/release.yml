@@ -118,7 +118,7 @@ jobs:
         run: flutter pub get
 
       - name: Compilar Android APK Release
-        run: flutter build apk --release
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
       - name: Preparar APK para Download
         run: |

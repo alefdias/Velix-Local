@@ -67,15 +67,31 @@ class VelixLocalApp extends StatelessWidget {
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF0078D4),
         brightness: Brightness.light,
-        surface: const Color(0xFFF8FAFC),
+        surface: Colors.white,
         surfaceContainerLowest: Colors.white,
+        surfaceContainerLow: const Color(0xFFF8FAFC),
+        surfaceContainer: const Color(0xFFECEFF3),
       ),
-      scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+      scaffoldBackgroundColor: const Color(0xFFECEFF3),
       fontFamily: Platform.isWindows ? 'Segoe UI' : null,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
+        foregroundColor: Color(0xFF0F172A),
         elevation: 0,
+        scrolledUnderElevation: 0.5,
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFF0078D4).withOpacity(0.12),
+        elevation: 2,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0078D4));
+          }
+          return const TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Color(0xFF64748B));
+        }),
+      ),
+      dividerColor: const Color(0xFFE2E8F0),
     );
   }
 
@@ -376,6 +392,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mdns = context.watch<MdnsDiscoveryService>();
     final syncService = context.watch<SyncService>();
     final chunkTransfer = context.watch<ChunkTransferService>();
@@ -429,9 +446,11 @@ class _MainScaffoldState extends State<MainScaffold> {
                     height: 52,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF13171D) : Colors.white,
                       border: Border(
                         bottom: BorderSide(
-                          color: Theme.of(context).dividerColor.withOpacity(0.08),
+                          color: isDark ? const Color(0xFF21262D) : const Color(0xFFE2E8F0),
+                          width: 1,
                         ),
                       ),
                     ),
