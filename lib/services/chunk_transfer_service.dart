@@ -152,7 +152,9 @@ class ChunkTransferService extends ChangeNotifier {
     final data = jsonDecode(body) as Map<String, dynamic>;
 
     final sessionId = data['session_id'] as String;
-    final fileName = data['file_name'] as String;
+    final rawFileName = data['file_name'] as String? ?? 'arquivo';
+    // Sanitização de Segurança Nível NASA/OWASP (CWE-22: Path Traversal Prevention)
+    final fileName = p.basename(rawFileName).replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     final fileSize = data['file_size'] as int;
     final totalChunks = data['total_chunks'] as int;
     final chunkSize = data['chunk_size'] as int;
@@ -302,8 +304,8 @@ class ChunkTransferService extends ChangeNotifier {
         await destinationDir.create(recursive: true);
       }
 
-      var finalFileName = currentTransfer.fileName;
-      var destinationPath = p.join(destDir, finalFileName);
+      var finalFileName = p.basename(currentTransfer.fileName).replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+      var destinationPath = p.normalize(p.join(destDir, finalFileName));
 
       // Resolução de conflito: se o arquivo já existir com conteúdo diferente,
       // salva como "nome (DispositivoOrigem).ext"
