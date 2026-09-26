@@ -20,6 +20,7 @@ import 'screens/history_screen.dart';
 import 'services/deploy_service.dart';
 import 'screens/deploy_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/i18n_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,7 @@ class VelixLocalApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: SettingsService.instance),
+        ChangeNotifierProvider.value(value: I18n.instance),
         ChangeNotifierProvider.value(value: MdnsDiscoveryService.instance),
         ChangeNotifierProvider.value(value: ChunkTransferService.instance),
         ChangeNotifierProvider.value(value: SyncService.instance),
@@ -503,27 +505,27 @@ class _MainScaffoldState extends State<MainScaffold> {
             NavigationDestination(
               icon: const Icon(Icons.devices_outlined),
               selectedIcon: const Icon(Icons.devices),
-              label: 'Rede',
+              label: I18n.t('nav_devices'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.sync_outlined),
               selectedIcon: const Icon(Icons.sync),
-              label: 'Sync',
+              label: I18n.t('nav_sync'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.swap_horiz_outlined),
               selectedIcon: const Icon(Icons.swap_horiz),
-              label: 'Enviar',
+              label: I18n.t('nav_transfer_short'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.history_outlined),
               selectedIcon: const Icon(Icons.history),
-              label: 'Histórico',
+              label: I18n.t('nav_history'),
             ),
             NavigationDestination(
               icon: const Icon(Icons.settings_outlined),
               selectedIcon: const Icon(Icons.settings),
-              label: 'Ajustes',
+              label: I18n.t('nav_settings'),
             ),
           ],
         ),

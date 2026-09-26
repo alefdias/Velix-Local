@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/i18n_service.dart';
 
 class TopNavItem {
   final IconData icon;
@@ -45,40 +46,40 @@ class TopNavBar extends StatelessWidget {
       TopNavItem(
         icon: Icons.dashboard_outlined,
         activeIcon: Icons.dashboard_rounded,
-        label: 'Início',
+        label: I18n.t('nav_home'),
       ),
       TopNavItem(
         icon: Icons.devices_outlined,
         activeIcon: Icons.devices_rounded,
-        label: 'Dispositivos',
+        label: I18n.t('nav_devices'),
         badgeCount: onlineDevicesCount > 0 ? onlineDevicesCount : null,
       ),
       TopNavItem(
         icon: Icons.sync_outlined,
         activeIcon: Icons.sync_rounded,
-        label: 'Sync',
+        label: I18n.t('nav_sync'),
         badgeCount: activeSyncCount > 0 ? activeSyncCount : null,
       ),
       TopNavItem(
         icon: Icons.swap_horiz_outlined,
         activeIcon: Icons.swap_horiz_rounded,
-        label: 'Transferir',
+        label: I18n.t('nav_transfers'),
         badgeCount: activeTransfersCount > 0 ? activeTransfersCount : null,
       ),
-      const TopNavItem(
+      TopNavItem(
         icon: Icons.rocket_launch_outlined,
         activeIcon: Icons.rocket_launch_rounded,
-        label: 'Deploy',
+        label: I18n.t('nav_deploy'),
       ),
-      const TopNavItem(
+      TopNavItem(
         icon: Icons.history_outlined,
         activeIcon: Icons.history_rounded,
-        label: 'Histórico',
+        label: I18n.t('nav_history'),
       ),
-      const TopNavItem(
+      TopNavItem(
         icon: Icons.settings_outlined,
         activeIcon: Icons.settings_rounded,
-        label: 'Ajustes',
+        label: I18n.t('nav_settings'),
       ),
     ];
 
@@ -137,11 +138,11 @@ class TopNavBar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Velix Local',
                         style: TextStyle(
                           fontSize: 16,
@@ -150,8 +151,8 @@ class TopNavBar extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Sincronize sem nuvem',
-                        style: TextStyle(
+                        I18n.t('slogan'),
+                        style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF64748B),
                           fontWeight: FontWeight.w500,

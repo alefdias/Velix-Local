@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/settings_service.dart';
 import '../services/file_action_service.dart';
+import '../services/i18n_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -25,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             // Header
             Text(
-              'Configurações',
+              I18n.t('settings_title'),
               style: TextStyle(
                 fontSize: isMobile ? 22 : 26,
                 fontWeight: FontWeight.bold,
@@ -34,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Personalize o comportamento do Velix Local no seu dispositivo.',
+              I18n.t('settings_desc'),
               style: TextStyle(
                 fontSize: 13,
                 color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
@@ -43,29 +44,77 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
+            // Card 0: Seleção de Idioma (12 Idiomas Mundiais)
+            _buildSectionCard(
+              context,
+              title: I18n.t('language_section'),
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.language_rounded, color: Color(0xFF0078D4)),
+                  title: Text(I18n.t('language_select'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  subtitle: Text(
+                    I18n.supportedLanguages[settings.language] ?? settings.language,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0078D4),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: I18n.supportedLanguages.containsKey(settings.language) ? settings.language : 'auto',
+                      icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0078D4)),
+                      dropdownColor: isDark ? const Color(0xFF1E242C) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      items: I18n.supportedLanguages.entries.map((entry) {
+                        return DropdownMenuItem<String>(
+                          value: entry.key,
+                          child: Text(
+                            entry.value,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: entry.key == settings.language ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (newLang) {
+                        if (newLang != null) {
+                          settings.setLanguage(newLang);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
             // Card 1: Identificação do Dispositivo
             _buildSectionCard(
               context,
-              title: 'Identificação na Rede',
+              title: I18n.t('device_id_section'),
               children: [
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.badge_outlined, color: Color(0xFF0078D4)),
-                  title: const Text('Nome do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  title: Text(I18n.t('device_name'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   subtitle: Text(settings.deviceName, style: const TextStyle(fontSize: 13)),
                   trailing: OutlinedButton(
                     onPressed: () => _editDeviceName(context, settings),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     ),
-                    child: const Text('Alterar', style: TextStyle(fontSize: 12)),
+                    child: Text(I18n.t('btn_change'), style: const TextStyle(fontSize: 12)),
                   ),
                 ),
                 const Divider(height: 20),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.fingerprint, color: Color(0xFF0078D4)),
-                  title: const Text('ID do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  title: Text(I18n.t('device_id'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   subtitle: Text(
                     settings.deviceId,
                     style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
@@ -81,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
             // Card 2: Armazenamento e Downloads
             _buildSectionCard(
               context,
-              title: 'Armazenamento',
+              title: I18n.t('storage_section'),
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,8 +139,8 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.download_for_offline_outlined, color: Color(0xFF10B981), size: 24),
                         const SizedBox(width: 12),
-                        const Expanded(
-                          child: Text('Pasta de Downloads', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        Expanded(
+                          child: Text(I18n.t('download_folder'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                         ),
                       ],
                     ),
@@ -101,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Text(
                         settings.downloadDirectory.isNotEmpty
                             ? settings.downloadDirectory
-                            : 'Padrão do Sistema',
+                            : I18n.t('default_system'),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -117,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
                         ElevatedButton.icon(
                           onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
                           icon: const Icon(Icons.folder_open_rounded, size: 14),
-                          label: const Text('Abrir', style: TextStyle(fontSize: 12)),
+                          label: Text(I18n.t('btn_open'), style: const TextStyle(fontSize: 12)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0078D4),
                             foregroundColor: Colors.white,
@@ -136,7 +185,7 @@ class SettingsScreen extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           ),
-                          child: const Text('Mudar', style: TextStyle(fontSize: 12)),
+                          child: Text(I18n.t('btn_edit'), style: const TextStyle(fontSize: 12)),
                         ),
                       ],
                     ),
@@ -150,13 +199,13 @@ class SettingsScreen extends StatelessWidget {
             // Card 3: Sincronização & Rede
             _buildSectionCard(
               context,
-              title: 'Sincronização & Rede P2P',
+              title: I18n.t('sync_network_section'),
               children: [
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   secondary: const Icon(Icons.sync_rounded, color: Color(0xFF8B5CF6)),
-                  title: const Text('Sincronização Automática Contínua', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Detecta modificações de arquivos em tempo real e sincroniza sem intervenção.'),
+                  title: Text(I18n.t('auto_sync_title'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(I18n.t('auto_sync_desc')),
                   value: settings.autoSyncEnabled,
                   onChanged: (val) => settings.setAutoSyncEnabled(val),
                 ),
@@ -164,7 +213,7 @@ class SettingsScreen extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.lan_outlined, color: Color(0xFF8B5CF6)),
-                  title: const Text('Porta do Servidor HTTP Local', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(I18n.t('http_port_title'), style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text('${settings.httpPort} (mDNS Broadcast: ${settings.discoveryPort})'),
                 ),
               ],
@@ -175,22 +224,22 @@ class SettingsScreen extends StatelessWidget {
             // Card 4: Aparência
             _buildSectionCard(
               context,
-              title: 'Aparência',
+              title: I18n.t('appearance_section'),
               children: [
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.palette_outlined, color: Color(0xFFF59E0B)),
-                  title: const Text('Tema do Aplicativo', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(I18n.t('theme_title'), style: const TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: Text(
                     settings.themeMode == 'dark'
-                        ? 'Tema Escuro'
-                        : (settings.themeMode == 'light' ? 'Tema Claro' : 'Padrão do Sistema'),
+                        ? I18n.t('theme_dark')
+                        : (settings.themeMode == 'light' ? I18n.t('theme_light') : I18n.t('theme_system')),
                   ),
                   trailing: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'system', icon: Icon(Icons.brightness_auto, size: 16)),
-                      ButtonSegment(value: 'light', icon: Icon(Icons.light_mode, size: 16)),
-                      ButtonSegment(value: 'dark', icon: Icon(Icons.dark_mode, size: 16)),
+                    segments: [
+                      ButtonSegment(value: 'system', icon: const Icon(Icons.brightness_auto, size: 16), label: Text(I18n.t('theme_system'))),
+                      ButtonSegment(value: 'light', icon: const Icon(Icons.light_mode, size: 16), label: Text(I18n.t('theme_light'))),
+                      ButtonSegment(value: 'dark', icon: const Icon(Icons.dark_mode, size: 16), label: Text(I18n.t('theme_dark'))),
                     ],
                     selected: {settings.themeMode},
                     onSelectionChanged: (newSelection) {
@@ -206,7 +255,7 @@ class SettingsScreen extends StatelessWidget {
             // Card 5: Sobre o Velix Local
             _buildSectionCard(
               context,
-              title: 'Sobre o Velix Local',
+              title: I18n.t('about_section'),
               children: [
                 const Row(
                   children: [
@@ -216,15 +265,15 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'v1.0.0 (Build Stable)',
+                      'v1.0.16 (Build Stable)',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Velix Local — Sincronize sem nuvem.',
-                  style: TextStyle(
+                Text(
+                  'Velix Local — ${I18n.t('slogan')}.',
+                  style: const TextStyle(
                     fontStyle: FontStyle.italic,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF0078D4),
@@ -232,16 +281,16 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Software de sincronização e transferência de arquivos peer-to-peer em rede local, totalmente independente da internet, nuvem ou servidores externos.',
+                  I18n.t('about_desc'),
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Licença MIT • Multiplataforma (Windows, Linux e Android)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  I18n.t('license_info'),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/i18n_service.dart';
 
 class SidebarItem {
   final IconData icon;
@@ -43,30 +44,30 @@ class Sidebar extends StatelessWidget {
       SidebarItem(
         icon: Icons.devices_outlined,
         activeIcon: Icons.devices_rounded,
-        label: 'Dispositivos',
+        label: I18n.t('nav_devices'),
         badgeCount: onlineDevicesCount > 0 ? onlineDevicesCount : null,
       ),
       SidebarItem(
         icon: Icons.sync_outlined,
         activeIcon: Icons.sync_rounded,
-        label: 'Sync',
+        label: I18n.t('nav_sync'),
         badgeCount: activeSyncCount > 0 ? activeSyncCount : null,
       ),
       SidebarItem(
         icon: Icons.swap_horiz_outlined,
         activeIcon: Icons.swap_horiz_rounded,
-        label: 'Transferências',
+        label: I18n.t('nav_transfers'),
         badgeCount: activeTransfersCount > 0 ? activeTransfersCount : null,
       ),
-      const SidebarItem(
+      SidebarItem(
         icon: Icons.history_outlined,
         activeIcon: Icons.history_rounded,
-        label: 'Histórico',
+        label: I18n.t('nav_history'),
       ),
-      const SidebarItem(
+      SidebarItem(
         icon: Icons.settings_outlined,
         activeIcon: Icons.settings_rounded,
-        label: 'Configurações',
+        label: I18n.t('nav_settings_full'),
       ),
     ];
 

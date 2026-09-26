@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'database_service.dart';
+import 'i18n_service.dart';
 
 class SettingsService extends ChangeNotifier {
   static final SettingsService instance = SettingsService._internal();
@@ -15,6 +16,7 @@ class SettingsService extends ChangeNotifier {
   final int _discoveryPort = 53317;
   String _downloadDirectory = '';
   String _themeMode = 'light'; // 'system', 'light', 'dark'
+  String _language = 'auto';
   bool _autoSyncEnabled = true;
   bool _isInitialized = false;
 
@@ -24,6 +26,7 @@ class SettingsService extends ChangeNotifier {
   int get discoveryPort => _discoveryPort;
   String get downloadDirectory => _downloadDirectory;
   String get themeMode => _themeMode;
+  String get language => _language;
   bool get autoSyncEnabled => _autoSyncEnabled;
   bool get isInitialized => _isInitialized;
 
@@ -73,6 +76,11 @@ class SettingsService extends ChangeNotifier {
       _themeMode = 'light';
       await db.setSetting('theme_mode', 'light');
     }
+
+    // Language & I18n
+    final storedLang = await db.getSetting('app_language');
+    _language = storedLang ?? 'auto';
+    await I18n.instance.init();
 
     // Auto Sync
     final storedAutoSync = await db.getSetting('auto_sync');
@@ -215,6 +223,12 @@ class SettingsService extends ChangeNotifier {
   Future<void> setThemeMode(String mode) async {
     _themeMode = mode;
     await DatabaseService.instance.setSetting('theme_mode', mode);
+    notifyListeners();
+  }
+
+  Future<void> setLanguage(String langCode) async {
+    _language = langCode;
+    await I18n.instance.setLanguage(langCode);
     notifyListeners();
   }
 
