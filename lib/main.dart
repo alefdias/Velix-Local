@@ -486,6 +486,59 @@ class _MainScaffoldState extends State<MainScaffold> {
             ],
           ),
           actions: [
+            ListenableBuilder(
+              listenable: I18n.instance,
+              builder: (context, _) {
+                final currentCode = I18n.instance.currentLanguage;
+                final effectiveCode = I18n.instance.effectiveLanguage;
+                final flag = I18n.languageFlags[effectiveCode] ?? '🌐';
+
+                return PopupMenuButton<String>(
+                  tooltip: I18n.t('language_select'),
+                  icon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(flag, style: const TextStyle(fontSize: 16)),
+                      const Icon(Icons.arrow_drop_down, size: 18),
+                    ],
+                  ),
+                  onSelected: (String langCode) async {
+                    await I18n.instance.setLanguage(langCode);
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return I18n.supportedLanguages.entries.map((entry) {
+                      final langCode = entry.key;
+                      final langTitle = entry.value;
+                      final langFlag = I18n.languageFlags[langCode] ?? '🌐';
+                      final isSelected = currentCode == langCode;
+
+                      return PopupMenuItem<String>(
+                        value: langCode,
+                        height: 38,
+                        child: Row(
+                          children: [
+                            Text(langFlag, style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                langTitle,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected ? const Color(0xFF0078D4) : null,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check, size: 16, color: Color(0xFF0078D4)),
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.dashboard_outlined),
               tooltip: 'Home',

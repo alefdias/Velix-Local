@@ -317,6 +317,99 @@ class TopNavBar extends StatelessWidget {
               ),
             ),
 
+          // Seletor Rápido de Idioma no Menu Superior
+          ListenableBuilder(
+            listenable: I18n.instance,
+            builder: (context, _) {
+              final currentCode = I18n.instance.currentLanguage;
+              final effectiveCode = I18n.instance.effectiveLanguage;
+              final flag = I18n.languageFlags[effectiveCode] ?? '🌐';
+              final shortCode = I18n.languageShortCodes[effectiveCode] ?? effectiveCode.toUpperCase();
+              final isAuto = currentCode == 'auto';
+
+              return Container(
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E242C) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: PopupMenuButton<String>(
+                  tooltip: I18n.t('language_select'),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  color: isDark ? const Color(0xFF181C23) : Colors.white,
+                  offset: const Offset(0, 46),
+                  onSelected: (String langCode) async {
+                    await I18n.instance.setLanguage(langCode);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(flag, style: const TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          isAuto ? 'AUTO ($shortCode)' : shortCode,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 16,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ],
+                    ),
+                  ),
+                  itemBuilder: (BuildContext context) {
+                    return I18n.supportedLanguages.entries.map((entry) {
+                      final langCode = entry.key;
+                      final langTitle = entry.value;
+                      final langFlag = I18n.languageFlags[langCode] ?? '🌐';
+                      final isSelected = currentCode == langCode;
+
+                      return PopupMenuItem<String>(
+                        value: langCode,
+                        height: 40,
+                        child: Row(
+                          children: [
+                            Text(langFlag, style: const TextStyle(fontSize: 15)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                langTitle,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  color: isSelected
+                                      ? const Color(0xFF0078D4)
+                                      : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B)),
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(
+                                Icons.check_rounded,
+                                size: 16,
+                                color: Color(0xFF0078D4),
+                              ),
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                ),
+              );
+            },
+          ),
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(

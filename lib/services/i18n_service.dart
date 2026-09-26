@@ -1,13 +1,17 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'database_service.dart';
 
 class I18n extends ChangeNotifier {
   static final I18n instance = I18n._internal();
-  I18n._internal();
+  
+  I18n._internal() {
+    _updateEffectiveLanguage();
+  }
 
   String _currentLanguage = 'auto';
-  String _effectiveLanguage = 'pt';
+  String _effectiveLanguage = 'en';
 
   String get currentLanguage => _currentLanguage;
   String get effectiveLanguage => _effectiveLanguage;
@@ -15,7 +19,7 @@ class I18n extends ChangeNotifier {
   static const Map<String, String> supportedLanguages = {
     'auto': 'Automático / System Default',
     'pt': 'Português (Brasil)',
-    'en': 'English',
+    'en': 'English (US)',
     'es': 'Español',
     'fr': 'Français',
     'de': 'Deutsch',
@@ -27,6 +31,41 @@ class I18n extends ChangeNotifier {
     'ar': 'العربية',
     'hi': 'हिन्दी',
   };
+
+  static const Map<String, String> languageFlags = {
+    'auto': '🌐',
+    'pt': '🇧🇷',
+    'en': '🇺🇸',
+    'es': '🇪🇸',
+    'fr': '🇫🇷',
+    'de': '🇩🇪',
+    'it': '🇮🇹',
+    'ru': '🇷🇺',
+    'zh': '🇨🇳',
+    'ja': '🇯🇵',
+    'ko': '🇰🇷',
+    'ar': '🇸🇦',
+    'hi': '🇮🇳',
+  };
+
+  static const Map<String, String> languageShortCodes = {
+    'auto': 'AUTO',
+    'pt': 'PT',
+    'en': 'EN',
+    'es': 'ES',
+    'fr': 'FR',
+    'de': 'DE',
+    'it': 'IT',
+    'ru': 'RU',
+    'zh': 'ZH',
+    'ja': 'JA',
+    'ko': 'KO',
+    'ar': 'AR',
+    'hi': 'HI',
+  };
+
+  String get currentFlag => languageFlags[_effectiveLanguage] ?? '🌐';
+  String get effectiveShortCode => (languageShortCodes[_effectiveLanguage] ?? _effectiveLanguage.toUpperCase());
 
   Future<void> init() async {
     try {
@@ -41,15 +80,34 @@ class I18n extends ChangeNotifier {
 
   void _updateEffectiveLanguage() {
     if (_currentLanguage == 'auto') {
-      final systemLocale = PlatformDispatcher.instance.locale.languageCode.toLowerCase();
-      if (_translations.containsKey(systemLocale)) {
-        _effectiveLanguage = systemLocale;
+      final systemLang = _detectSystemLanguage();
+      if (_translations.containsKey(systemLang)) {
+        _effectiveLanguage = systemLang;
       } else {
-        _effectiveLanguage = 'en'; // fallback global
+        _effectiveLanguage = 'en'; // fallback internacional padrão (Inglês)
       }
     } else {
       _effectiveLanguage = _translations.containsKey(_currentLanguage) ? _currentLanguage : 'en';
     }
+  }
+
+  String _detectSystemLanguage() {
+    try {
+      final code = PlatformDispatcher.instance.locale.languageCode.toLowerCase();
+      if (code.isNotEmpty && code != 'und') {
+        return code;
+      }
+    } catch (_) {}
+
+    try {
+      final localeName = Platform.localeName.toLowerCase();
+      final lang = localeName.split(RegExp(r'[^a-zA-Z]')).first;
+      if (lang.isNotEmpty) {
+        return lang;
+      }
+    } catch (_) {}
+
+    return 'en';
   }
 
   Future<void> setLanguage(String langCode) async {
