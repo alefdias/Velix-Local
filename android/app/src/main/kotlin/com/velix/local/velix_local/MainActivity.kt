@@ -92,6 +92,7 @@ class MainActivity : FlutterActivity() {
                     } else {
                         result.success(true)
                     }
+                }
                 "playNotificationSound" -> {
                     playNotificationSound()
                     result.success(true)
