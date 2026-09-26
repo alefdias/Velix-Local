@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ffi';
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqlite3/open.dart';
@@ -167,6 +168,25 @@ class DatabaseService {
       )
     ''');
 
+    // Garante que a tabela transfer_history exista mesmo em bancos já criados anteriormente
+    await _db!.execute('''
+      CREATE TABLE IF NOT EXISTS transfer_history (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        file_name TEXT NOT NULL,
+        file_path TEXT,
+        file_size INTEGER NOT NULL,
+        source_device TEXT NOT NULL,
+        target_device TEXT NOT NULL,
+        is_incoming INTEGER NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT,
+        status TEXT NOT NULL,
+        speed_mbps REAL NOT NULL DEFAULT 0,
+        error_message TEXT
+      )
+    ''');
+
     return _db!;
   }
 
@@ -309,29 +329,44 @@ class DatabaseService {
   // --- Histórico de Transferências ---
 
   Future<List<TransferItem>> getTransferHistory({String? query}) async {
-    final db = await database;
-    List<Map<String, dynamic>> maps;
-    if (query != null && query.trim().isNotEmpty) {
-      maps = await db.query(
-        'transfer_history',
-        where: 'file_name LIKE ? OR source_device LIKE ? OR target_device LIKE ?',
-        whereArgs: ['%$query%', '%$query%', '%$query%'],
-        orderBy: 'start_time DESC',
-      );
-    } else {
-      maps = await db.query('transfer_history', orderBy: 'start_time DESC');
+    try {
+      final db = await database;
+      List<Map<String, dynamic>> maps;
+      if (query != null && query.trim().isNotEmpty) {
+        maps = await db.query(
+          'transfer_history',
+          where: 'file_name LIKE ? OR source_device LIKE ? OR target_device LIKE ?',
+          whereArgs: ['%$query%', '%$query%', '%$query%'],
+          orderBy: 'start_time DESC',
+        );
+      } else {
+        maps = await db.query('transfer_history', orderBy: 'start_time DESC');
+      }
+      return maps.map((m) => TransferItem.fromMap(m)).toList();
+    } catch (e, stack) {
+      debugPrint('[DatabaseService] Erro ao carregar transfer_history: $e\n$stack');
+      return [];
     }
-    return maps.map((m) => TransferItem.fromMap(m)).toList();
   }
 
   Future<void> saveTransferHistory(TransferItem item) async {
-    final db = await database;
-    await db.insert('transfer_history', item.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    try {
+      final db = await database;
+      await db.insert('transfer_history', item.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      debugPrint('[DatabaseService] Transferência salva no histórico: ${item.fileName} (${item.status.name})');
+    } catch (e, stack) {
+      debugPrint('[DatabaseService] Erro ao salvar item em transfer_history: $e\n$stack');
+    }
   }
 
   Future<void> clearHistory() async {
-    final db = await database;
-    await db.delete('transfer_history');
+    try {
+      final db = await database;
+      await db.delete('transfer_history');
+      debugPrint('[DatabaseService] Histórico limpo com sucesso.');
+    } catch (e) {
+      debugPrint('[DatabaseService] Erro ao limpar histórico: $e');
+    }
   }
 
   // --- Progresso de Blocos (Chunks) para Retomada ---

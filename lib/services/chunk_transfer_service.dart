@@ -194,6 +194,7 @@ class ChunkTransferService extends ChangeNotifier {
     );
 
     _activeTransfers[sessionId] = transferItem;
+    await DatabaseService.instance.saveTransferHistory(transferItem);
     notifyListeners();
 
     request.response.statusCode = HttpStatus.ok;
@@ -437,6 +438,7 @@ class ChunkTransferService extends ChangeNotifier {
     );
 
     _activeTransfers[sessionId] = transferItem;
+    await DatabaseService.instance.saveTransferHistory(transferItem);
     notifyListeners();
 
     final client = HttpClient();
@@ -574,6 +576,9 @@ class ChunkTransferService extends ChangeNotifier {
           }
         });
         return true;
+      } else {
+        final errText = await utf8.decoder.bind(compResp).join();
+        throw Exception('Destinatário respondeu com erro ao concluir (HTTP ${compResp.statusCode}): $errText');
       }
     } catch (e) {
       debugPrint('[ChunkTransferService] Erro durante transferência: $e');
@@ -592,11 +597,15 @@ class ChunkTransferService extends ChangeNotifier {
     return false;
   }
 
-  void cancelTransfer(String sessionId) {
-    if (_activeTransfers.containsKey(sessionId)) {
-      _activeTransfers[sessionId] = _activeTransfers[sessionId]!.copyWith(
+  Future<void> cancelTransfer(String sessionId) async {
+    final item = _activeTransfers[sessionId];
+    if (item != null) {
+      final canceledItem = item.copyWith(
         status: TransferStatus.canceled,
+        endTime: DateTime.now(),
       );
+      _activeTransfers[sessionId] = canceledItem;
+      await DatabaseService.instance.saveTransferHistory(canceledItem);
       notifyListeners();
     }
   }

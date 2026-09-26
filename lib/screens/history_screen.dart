@@ -6,6 +6,7 @@ import '../models/transfer.dart';
 import '../services/database_service.dart';
 import '../services/settings_service.dart';
 import '../services/file_action_service.dart';
+import '../services/chunk_transfer_service.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -23,6 +24,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void initState() {
     super.initState();
     _loadHistory();
+    ChunkTransferService.instance.addListener(_onTransferChange);
+  }
+
+  @override
+  void dispose() {
+    ChunkTransferService.instance.removeListener(_onTransferChange);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onTransferChange() {
+    if (mounted) {
+      _loadHistory(_searchController.text);
+    }
   }
 
   Future<void> _loadHistory([String? query]) async {
@@ -89,6 +104,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
+                        onPressed: () => _loadHistory(_searchController.text),
+                        icon: const Icon(Icons.refresh_rounded, size: 20),
+                        tooltip: 'Recarregar Histórico',
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
                         onPressed: _history.isEmpty ? null : _confirmClearHistory,
                         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),
                         tooltip: 'Limpar',
@@ -128,32 +150,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     runSpacing: 8,
                     children: [
                       OutlinedButton.icon(
+                        onPressed: () => _loadHistory(_searchController.text),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Atualizar'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      OutlinedButton.icon(
                         onPressed: () => FileActionService.openFolder(SettingsService.instance.downloadDirectory, context),
                         icon: const Icon(Icons.folder_open_rounded, size: 18),
                         label: const Text('Pasta de Downloads'),
                         style: OutlinedButton.styleFrom(
-                        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
-                        side: BorderSide(
-                          color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
-                        ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    if (_history.isNotEmpty)
-                      OutlinedButton.icon(
-                        onPressed: _confirmClearHistory,
-                        icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-                        label: const Text('Limpar Histórico'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: const BorderSide(color: Colors.redAccent),
+                          foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                          side: BorderSide(
+                            color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
+                          ),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
-                  ],
-                ),
-              ],
-            ),
+                      if (_history.isNotEmpty)
+                        OutlinedButton.icon(
+                          onPressed: _confirmClearHistory,
+                          icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                          label: const Text('Limpar Histórico'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.redAccent,
+                            side: const BorderSide(color: Colors.redAccent),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
 
             const SizedBox(height: 20),
 
@@ -224,10 +255,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                 ),
                               ),
+                              const SizedBox(height: 16),
+                              OutlinedButton.icon(
+                                onPressed: () => _loadHistory(_searchController.text),
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
+                                label: const Text('Atualizar Histórico'),
+                              ),
                             ],
                           ),
                         )
-                      : ListView.builder(
+                      : RefreshIndicator(
+                          onRefresh: () => _loadHistory(_searchController.text),
+                          color: const Color(0xFF0078D4),
+                          child: ListView.builder(
                           itemCount: _history.length,
                           itemBuilder: (context, index) {
                             final item = _history[index];
@@ -422,6 +462,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             );
                           },
                         ),
+                      ),
             ),
           ],
         ),
