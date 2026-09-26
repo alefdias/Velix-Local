@@ -57,7 +57,7 @@ class DatabaseService {
       dbPath = p.join(documentsDir.path, 'velix_local.db');
     }
 
-    return await openDatabase(
+    final db = await openDatabase(
       dbPath,
       version: 1,
       onCreate: (db, version) async {
@@ -160,7 +160,7 @@ class DatabaseService {
     );
 
     // Garante que a tabela device_aliases exista mesmo se o banco já foi criado
-    await _db!.execute('''
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS device_aliases (
         device_id TEXT PRIMARY KEY,
         alias TEXT NOT NULL,
@@ -169,7 +169,7 @@ class DatabaseService {
     ''');
 
     // Garante que a tabela transfer_history exista mesmo em bancos já criados anteriormente
-    await _db!.execute('''
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS transfer_history (
         id TEXT PRIMARY KEY,
         session_id TEXT NOT NULL,
@@ -187,7 +187,7 @@ class DatabaseService {
       )
     ''');
 
-    return _db!;
+    return db;
   }
 
   // --- Apelidos e Renomeação Corporativa ---

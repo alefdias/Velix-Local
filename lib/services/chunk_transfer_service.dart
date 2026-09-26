@@ -613,13 +613,31 @@ class ChunkTransferService extends ChangeNotifier {
   Future<Directory> _getTempDirectory() async {
     Directory baseDir;
     try {
-      baseDir = await getTemporaryDirectory();
+      final downloadPath = SettingsService.instance.downloadDirectory;
+      if (downloadPath.isNotEmpty) {
+        final downloadDir = Directory(downloadPath);
+        if (downloadDir.existsSync()) {
+          baseDir = downloadDir;
+        } else {
+          baseDir = await getTemporaryDirectory();
+        }
+      } else {
+        baseDir = await getTemporaryDirectory();
+      }
     } catch (_) {
-      baseDir = Directory.current;
+      try {
+        baseDir = await getTemporaryDirectory();
+      } catch (_) {
+        baseDir = Directory.current;
+      }
     }
-    final velixTemp = Directory(p.join(baseDir.path, 'velix_temp'));
+    final velixTemp = Directory(p.join(baseDir.path, '.velix_temp'));
     if (!await velixTemp.exists()) {
-      await velixTemp.create(recursive: true);
+      try {
+        await velixTemp.create(recursive: true);
+      } catch (_) {
+        return Directory.systemTemp;
+      }
     }
     return velixTemp;
   }
