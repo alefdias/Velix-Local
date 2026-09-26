@@ -89,7 +89,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        onPressed: _history.isEmpty ? null : () => _confirmClearHistory(context),
+                        onPressed: _history.isEmpty ? null : _confirmClearHistory,
                         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),
                         tooltip: 'Limpar',
                         visualDensity: VisualDensity.compact,
