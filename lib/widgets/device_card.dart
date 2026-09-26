@@ -53,7 +53,6 @@ class DeviceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final hasAlias = device.customAlias != null && device.customAlias!.trim().isNotEmpty;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;

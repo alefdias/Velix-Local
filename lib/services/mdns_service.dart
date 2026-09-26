@@ -13,6 +13,7 @@ class MdnsDiscoveryService extends ChangeNotifier {
   RawDatagramSocket? _socket;
   Timer? _broadcastTimer;
   Timer? _cleanupTimer;
+  Timer? _heartbeatTimer;
 
   final Map<String, Device> _discoveredDevices = {};
   bool _isSearching = false;
@@ -49,9 +50,14 @@ class MdnsDiscoveryService extends ChangeNotifier {
         broadcastPresence();
       });
 
-      // Checagem de dispositivos offline a cada 4 segundos
-      _cleanupTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      // Checagem de dispositivos offline a cada 5 segundos com tolerância estendida
+      _cleanupTimer = Timer.periodic(const Duration(seconds: 5), (_) {
         _checkOfflineDevices();
+      });
+
+      // Heartbeat TCP periódico a cada 8 segundos para garantir estabilidade contínua
+      _heartbeatTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+        _pingKnownDevices();
       });
 
       // Anunciar presença imediatamente
@@ -130,7 +136,7 @@ class MdnsDiscoveryService extends ChangeNotifier {
       platform: DevicePlatformType.fromString(osString),
       ip: remoteIp,
       port: port,
-      isTrusted: true,
+      isTrusted: isTrusted || (existing?.isTrusted ?? true),
       isOnline: true,
       lastSeen: DateTime.now(),
     );
@@ -320,15 +326,66 @@ class MdnsDiscoveryService extends ChangeNotifier {
     }
   }
 
+  Future<void> _pingKnownDevices() async {
+    final myId = SettingsService.instance.deviceId;
+    final List<Device> targetDevices = _discoveredDevices.values
+        .where((d) => d.id != myId && d.ip.isNotEmpty)
+        .toList();
+
+    for (final device in targetDevices) {
+      await _pingSingleDevice(device);
+    }
+  }
+
+  Future<void> _pingSingleDevice(Device device) async {
+    final myId = SettingsService.instance.deviceId;
+    if (device.ip.isEmpty || device.id == myId) return;
+
+    final client = HttpClient();
+    client.connectionTimeout = const Duration(milliseconds: 1500);
+
+    try {
+      final uri = Uri.parse('http://${device.ip}:${device.port}/api/ping');
+      final req = await client.getUrl(uri);
+      final resp = await req.close();
+
+      if (resp.statusCode == HttpStatus.ok) {
+        final body = await utf8.decoder.bind(resp).join();
+        final Map<String, dynamic> data = jsonDecode(body);
+        final remoteId = data['device_id'] as String?;
+
+        if (remoteId == device.id) {
+          final existing = _discoveredDevices[device.id];
+          if (existing != null) {
+            _discoveredDevices[device.id] = existing.copyWith(
+              isOnline: true,
+              lastSeen: DateTime.now(),
+            );
+            notifyListeners();
+          }
+        }
+      }
+    } catch (_) {
+      // Ignorar falha individual de ping silenciosamente
+    } finally {
+      client.close();
+    }
+  }
+
   void _checkOfflineDevices() {
     final now = DateTime.now();
     bool changed = false;
 
     _discoveredDevices.forEach((id, device) {
       if (device.isOnline && device.lastSeen != null) {
-        if (now.difference(device.lastSeen!).inSeconds > 10) {
+        final elapsed = now.difference(device.lastSeen!).inSeconds;
+        // Tolerância estendida de 45 segundos para nunca cair por oscilação normal de rede
+        if (elapsed > 45) {
           _discoveredDevices[id] = device.copyWith(isOnline: false);
           changed = true;
+        } else if (elapsed > 15) {
+          // Se estiver há mais de 15 segundos sem anúncio UDP, tenta ping imediato
+          _pingSingleDevice(device);
         }
       }
     });
@@ -348,6 +405,7 @@ class MdnsDiscoveryService extends ChangeNotifier {
   void stopDiscovery() {
     _broadcastTimer?.cancel();
     _cleanupTimer?.cancel();
+    _heartbeatTimer?.cancel();
     _socket?.close();
     _socket = null;
   }

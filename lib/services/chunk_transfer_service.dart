@@ -13,6 +13,7 @@ import 'package:open_filex/open_filex.dart';
 import 'database_service.dart';
 import 'settings_service.dart';
 import 'pair_service.dart';
+import 'file_action_service.dart';
 
 const int kDefaultChunkSize = 1024 * 1024; // 1 MB por bloco
 
@@ -301,7 +302,12 @@ class ChunkTransferService extends ChangeNotifier {
       String destDir = targetFolder ?? SettingsService.instance.downloadDirectory;
       final destinationDir = Directory(destDir);
       if (!await destinationDir.exists()) {
-        await destinationDir.create(recursive: true);
+        try {
+          await destinationDir.create(recursive: true);
+        } catch (dirErr) {
+          debugPrint('[ChunkTransferService] Erro ao criar $destDir ($dirErr). Fallback para pasta padrão.');
+          destDir = await SettingsService.instance.resolveSafeDownloadDirectory();
+        }
       }
 
       var finalFileName = p.basename(currentTransfer.fileName).replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
@@ -317,7 +323,24 @@ class ChunkTransferService extends ChangeNotifier {
         destinationPath = p.join(destDir, finalFileName);
       }
 
-      await partFile.rename(destinationPath);
+      // Mover arquivo temporário para destino final de forma à prova de cross-device link
+      try {
+        await partFile.rename(destinationPath);
+      } catch (e) {
+        debugPrint('[ChunkTransferService] partFile.rename falhou ($e). Executando cópia de fluxo segura...');
+        try {
+          await partFile.copy(destinationPath);
+          try {
+            await partFile.delete();
+          } catch (_) {}
+        } catch (copyErr) {
+          debugPrint('[ChunkTransferService] Erro crítico ao copiar partFile para $destinationPath: $copyErr');
+          rethrow;
+        }
+      }
+
+      // Indexar o arquivo imediatamente no Android para aparecer no app "Files do Google" e Galeria
+      await FileActionService.scanMedia(destinationPath);
 
       final completedTransfer = currentTransfer.copyWith(
         status: TransferStatus.completed,
@@ -327,10 +350,18 @@ class ChunkTransferService extends ChangeNotifier {
         completedChunks: currentTransfer.totalChunks,
       );
 
-      _activeTransfers.remove(sessionId);
+      _activeTransfers[sessionId] = completedTransfer;
       await DatabaseService.instance.saveTransferHistory(completedTransfer);
       await DatabaseService.instance.clearChunkProgress(sessionId);
       notifyListeners();
+
+      // Manter o card com botões "Abrir Arquivo" e "Abrir Pasta" visível por 25s
+      Future.delayed(const Duration(seconds: 25), () {
+        if (_activeTransfers[sessionId]?.status == TransferStatus.completed) {
+          _activeTransfers.remove(sessionId);
+          notifyListeners();
+        }
+      });
     }
 
     request.response.statusCode = HttpStatus.ok;
@@ -531,9 +562,17 @@ class ChunkTransferService extends ChangeNotifier {
           bytesTransferred: fileSize,
           completedChunks: totalChunks,
         );
-        _activeTransfers.remove(sessionId);
+        _activeTransfers[sessionId] = finalItem;
         await DatabaseService.instance.saveTransferHistory(finalItem);
         notifyListeners();
+
+        // Manter o card visível por 20 segundos para confirmação visual de envio
+        Future.delayed(const Duration(seconds: 20), () {
+          if (_activeTransfers[sessionId]?.status == TransferStatus.completed) {
+            _activeTransfers.remove(sessionId);
+            notifyListeners();
+          }
+        });
         return true;
       }
     } catch (e) {

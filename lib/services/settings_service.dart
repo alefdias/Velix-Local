@@ -104,20 +104,53 @@ class SettingsService extends ChangeNotifier {
     return Platform.localHostname.isNotEmpty ? Platform.localHostname : 'Velix Node';
   }
 
+  Future<String> resolveSafeDownloadDirectory() async {
+    return _resolveDefaultDownloadDirectory();
+  }
+
   Future<String> _resolveDefaultDownloadDirectory() async {
     // 1. Android: Salvar diretamente na pasta pública Downloads do dispositivo
     if (Platform.isAndroid) {
+      // Tentativa 1: /storage/emulated/0/Download/VelixLocal
       try {
         final publicDownloadDir = Directory('/storage/emulated/0/Download/VelixLocal');
         if (!publicDownloadDir.existsSync()) {
           publicDownloadDir.createSync(recursive: true);
         }
+        // Teste de escrita
+        final testFile = File('${publicDownloadDir.path}/.velix_test');
+        testFile.writeAsStringSync('ok');
+        testFile.deleteSync();
         return publicDownloadDir.path;
       } catch (_) {
+        // Tentativa 2: /storage/emulated/0/Download direto
         try {
           final rootDownload = Directory('/storage/emulated/0/Download');
           if (rootDownload.existsSync()) {
+            final testFile = File('${rootDownload.path}/.velix_test');
+            testFile.writeAsStringSync('ok');
+            testFile.deleteSync();
             return rootDownload.path;
+          }
+        } catch (_) {}
+
+        // Tentativa 3: getExternalStorageDirectories(type: downloads)
+        try {
+          final extDownloads = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+          if (extDownloads != null && extDownloads.isNotEmpty) {
+            final dir = extDownloads.first;
+            if (!dir.existsSync()) dir.createSync(recursive: true);
+            return dir.path;
+          }
+        } catch (_) {}
+
+        // Tentativa 4: getExternalStorageDirectory()
+        try {
+          final extDir = await getExternalStorageDirectory();
+          if (extDir != null) {
+            final velixDir = Directory('${extDir.path}/Downloads');
+            if (!velixDir.existsSync()) velixDir.createSync(recursive: true);
+            return velixDir.path;
           }
         } catch (_) {}
       }

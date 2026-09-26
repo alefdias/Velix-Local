@@ -95,24 +95,38 @@ class FileActionService {
         await Process.run('open', [folderPath]);
         return;
       } else if (Platform.isAndroid) {
-        // No Android, tentar abrir com OpenFilex ou mostrar snackbar explicativo
-        final res = await OpenFilex.open(folderPath);
-        if (res.type != ResultType.done && context.mounted) {
+        // No Android, abrir o gerenciador nativo de Downloads/Arquivos diretamente
+        try {
+          const platform = MethodChannel('com.velix.local/platform');
+          final success = await platform.invokeMethod<bool>('openDownloadsFolder');
+          if (success == true) return;
+        } catch (e) {
+          debugPrint('[FileActionService] Erro ao invocar openDownloadsFolder: $e');
+        }
+
+        // Se o gerenciador não abriu diretamente, exibir aviso explicativo com caminho legível
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: const Color(0xFF0078D4),
               behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              duration: const Duration(seconds: 5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('📂 Arquivo salvo em:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Row(
+                    children: [
+                      Icon(Icons.folder_special_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text('Pasta de Downloads', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text('Salvo em: $folderPath', style: const TextStyle(fontSize: 12, fontFamily: 'monospace')),
                   const SizedBox(height: 4),
-                  Text(folderPath, style: const TextStyle(fontSize: 12)),
-                  const SizedBox(height: 2),
-                  const Text('Abra o aplicativo "Arquivos" ou "Downloads" do celular para ver todos os arquivos.', style: TextStyle(fontSize: 11, color: Colors.white70)),
+                  const Text('Abra o app "Files do Google" ou "Downloads" do seu celular para ver.', style: TextStyle(fontSize: 11, color: Colors.white70)),
                 ],
               ),
             ),
@@ -128,6 +142,33 @@ class FileActionService {
             behavior: SnackBarBehavior.floating,
           ),
         );
+      }
+    }
+  }
+
+  /// Dispara a indexação do arquivo no MediaStore do Android para aparecer de imediato no Files/Galeria
+  static Future<void> scanMedia(String filePath) async {
+    if (Platform.isAndroid) {
+      try {
+        const platform = MethodChannel('com.velix.local/platform');
+        await platform.invokeMethod('scanFile', {'path': filePath});
+      } catch (e) {
+        debugPrint('[FileActionService] Erro scanFile: $e');
+      }
+    }
+  }
+
+  /// Verifica e solicita permissão de gerenciamento de armazenamento no Android se necessário
+  static Future<void> checkAndRequestStoragePermission() async {
+    if (Platform.isAndroid) {
+      try {
+        const platform = MethodChannel('com.velix.local/platform');
+        final hasPermission = await platform.invokeMethod<bool>('checkStoragePermission');
+        if (hasPermission == false) {
+          await platform.invokeMethod('requestStoragePermission');
+        }
+      } catch (e) {
+        debugPrint('[FileActionService] Erro checkStoragePermission: $e');
       }
     }
   }
@@ -286,47 +327,82 @@ class FileActionService {
               ),
               const SizedBox(height: 10),
 
-              // Onde está salvo (Caminho)
-              if (filePath.isNotEmpty) ...[
-                _buildInfoRow(
-                  context,
-                  icon: Icons.folder_outlined,
-                  label: item.isIncoming ? 'Salvo em' : 'Origem',
-                  value: filePath,
-                  isPath: true,
-                  onCopy: () => copyPath(filePath, context),
+              // Onde está salvo (Caminho e Destino Claro)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: (item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4)).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: (item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4)).withOpacity(0.2),
+                  ),
                 ),
-                const SizedBox(height: 20),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          item.isIncoming ? Icons.download_done_rounded : Icons.upload_file_rounded,
+                          color: item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          item.isIncoming ? 'Salvo no seu dispositivo em:' : 'Destino da transferência:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.isIncoming
+                          ? (filePath.isNotEmpty ? filePath : 'Downloads/VelixLocal/${item.fileName}')
+                          : 'Enviado para ${item.targetDevice} (Salvo na pasta Downloads dele)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: item.isIncoming ? 'monospace' : null,
+                        color: isDark ? Colors.white70 : const Color(0xFF334155),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Botões de Ação Imediata
               Row(
                 children: [
-                  // Botão 1: Abrir Arquivo
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: fileExists
-                          ? () {
-                              Navigator.pop(ctx);
-                              openFile(filePath, context);
-                            }
-                          : null,
-                      icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                      label: const Text('Abrir Arquivo'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0078D4),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // Botão 1: Abrir Arquivo (se disponível localmente)
+                  if (fileExists) ...[
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          openFile(filePath, context);
+                        },
+                        icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                        label: const Text('Abrir Arquivo'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0078D4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                  ],
 
-                  // Botão 2: Abrir Pasta
+                  // Botão 2: Abrir Pasta de Downloads
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
@@ -334,7 +410,7 @@ class FileActionService {
                         openFolder(folderPath, context);
                       },
                       icon: const Icon(Icons.folder_open_rounded, size: 18),
-                      label: const Text('Abrir Pasta'),
+                      label: const Text('Abrir Downloads'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
                         side: BorderSide(
@@ -347,6 +423,15 @@ class FileActionService {
                       ),
                     ),
                   ),
+
+                  if (filePath.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    IconButton.outlined(
+                      onPressed: () => copyPath(filePath, context),
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      tooltip: 'Copiar caminho',
+                    ),
+                  ],
                 ],
               ),
             ],

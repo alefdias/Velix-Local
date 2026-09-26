@@ -215,19 +215,39 @@ class ProgressWidget extends StatelessWidget {
             const SizedBox(height: 12),
             const Divider(height: 1),
             const SizedBox(height: 10),
-            if (item.localFilePath != null && item.localFilePath!.isNotEmpty) ...[
-              Text(
-                'Salvo em: ${item.localFilePath}',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontFamily: 'monospace',
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: (item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4)).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 8),
-            ],
+              child: Row(
+                children: [
+                  Icon(
+                    item.isIncoming ? Icons.check_circle_rounded : Icons.cloud_done_rounded,
+                    color: item.isIncoming ? const Color(0xFF10B981) : const Color(0xFF0078D4),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item.isIncoming
+                          ? 'Salvo em: ${item.localFilePath ?? "Downloads/VelixLocal"}'
+                          : 'Enviado para ${item.targetDevice} (Pasta Downloads)',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontFamily: item.isIncoming ? 'monospace' : null,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 if (item.localFilePath != null && File(item.localFilePath!).existsSync()) ...[
@@ -254,7 +274,7 @@ class ProgressWidget extends StatelessWidget {
                       context,
                     ),
                     icon: const Icon(Icons.folder_open_rounded, size: 16),
-                    label: const Text('Abrir Pasta'),
+                    label: const Text('Abrir Downloads'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
