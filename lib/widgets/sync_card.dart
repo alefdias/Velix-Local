@@ -24,6 +24,9 @@ class SyncCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -44,7 +47,7 @@ class SyncCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(18.0),
+        padding: EdgeInsets.all(isMobile ? 12.0 : 18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -53,8 +56,8 @@ class SyncCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: isMobile ? 40 : 48,
+                  height: isMobile ? 40 : 48,
                   decoration: BoxDecoration(
                     color: folder.isPaused
                         ? Colors.grey.withOpacity(0.15)
@@ -64,21 +67,21 @@ class SyncCard extends StatelessWidget {
                   child: Center(
                     child: folder.isSyncing
                         ? const SizedBox(
-                            width: 24,
-                            height: 24,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
+                              strokeWidth: 2,
                               color: Color(0xFF0078D4),
                             ),
                           )
                         : Icon(
                             folder.isPaused ? Icons.folder_off_outlined : Icons.folder_rounded,
                             color: folder.isPaused ? Colors.grey : const Color(0xFF0078D4),
-                            size: 26,
+                            size: isMobile ? 22 : 26,
                           ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: isMobile ? 10 : 14),
 
                 Expanded(
                   child: Column(
@@ -89,8 +92,8 @@ class SyncCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               folder.folderName,
-                              style: const TextStyle(
-                                fontSize: 17,
+                              style: TextStyle(
+                                fontSize: isMobile ? 15 : 17,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -0.3,
                               ),
@@ -100,15 +103,15 @@ class SyncCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           if (folder.isPaused)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
                                 color: Colors.amber.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
                                 'Pausado',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.amber,
                                 ),
@@ -116,23 +119,27 @@ class SyncCard extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
 
-                      // PC <-> Notebook
+                      // PC <-> Celular
                       Row(
                         children: [
                           Icon(
                             Icons.devices,
-                            size: 14,
+                            size: 12,
                             color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '$localDeviceName ↔ ${folder.remoteDeviceName}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              '$localDeviceName ↔ ${folder.remoteDeviceName}',
+                              style: TextStyle(
+                                fontSize: isMobile ? 11 : 13,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -145,14 +152,15 @@ class SyncCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.folder_open, size: 20),
                     tooltip: 'Abrir pasta local',
+                    visualDensity: VisualDensity.compact,
                     onPressed: onOpenFolder,
                   ),
               ],
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             const Divider(height: 1, thickness: 1, color: Color(0x1F94A3B8)),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // Status e Estatísticas
             Row(
@@ -162,19 +170,11 @@ class SyncCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Status:',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
                         folder.isSyncing
                             ? 'Sincronizando em segundo plano...'
                             : (folder.isPaused ? 'Pausado pelo usuário' : folder.timeSinceLastSync),
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: isMobile ? 12 : 13,
                           fontWeight: FontWeight.w600,
                           color: folder.isSyncing
                               ? const Color(0xFF0078D4)
@@ -182,34 +182,36 @@ class SyncCard extends StatelessWidget {
                                   ? Colors.amber.shade700
                                   : (isDark ? Colors.white : const Color(0xFF1E293B))),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  '${folder.totalFiles} arquivos • ${folder.humanReadableSize}',
+                  '${folder.totalFiles} arqs • ${folder.humanReadableSize}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: isMobile ? 11 : 12,
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             // Barra de Botões: Sincronizar, Pausar, Remover
             Row(
               children: [
                 ElevatedButton.icon(
                   onPressed: folder.isSyncing || folder.isPaused ? null : onSyncNow,
-                  icon: const Icon(Icons.sync, size: 16),
-                  label: const Text('Sincronizar'),
+                  icon: const Icon(Icons.sync, size: 14),
+                  label: Text('Sincronizar', style: TextStyle(fontSize: isMobile ? 12 : 13)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0078D4),
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -219,11 +221,11 @@ class SyncCard extends StatelessWidget {
                   onPressed: onTogglePause,
                   icon: Icon(
                     folder.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                    size: 16,
+                    size: 14,
                   ),
-                  label: Text(folder.isPaused ? 'Retomar' : 'Pausar'),
+                  label: Text(folder.isPaused ? 'Retomar' : 'Pausar', style: TextStyle(fontSize: isMobile ? 12 : 13)),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -232,6 +234,7 @@ class SyncCard extends StatelessWidget {
                 IconButton(
                   onPressed: onRemove,
                   tooltip: 'Remover sincronização',
+                  visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
                 ),
               ],

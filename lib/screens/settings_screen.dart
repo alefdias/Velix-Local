@@ -13,18 +13,21 @@ class SettingsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final settings = context.watch<SettingsService>();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(28.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 28.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const Text(
+            Text(
               'Configurações',
               style: TextStyle(
-                fontSize: 26,
+                fontSize: isMobile ? 22 : 26,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5,
               ),
@@ -33,12 +36,12 @@ class SettingsScreen extends StatelessWidget {
             Text(
               'Personalize o comportamento do Velix Local no seu dispositivo.',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
 
             // Card 1: Identificação do Dispositivo
             _buildSectionCard(
@@ -48,75 +51,96 @@ class SettingsScreen extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.badge_outlined, color: Color(0xFF0078D4)),
-                  title: const Text('Nome do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(settings.deviceName),
+                  title: const Text('Nome do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  subtitle: Text(settings.deviceName, style: const TextStyle(fontSize: 13)),
                   trailing: OutlinedButton(
                     onPressed: () => _editDeviceName(context, settings),
-                    child: const Text('Alterar'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    ),
+                    child: const Text('Alterar', style: TextStyle(fontSize: 12)),
                   ),
                 ),
-                const Divider(height: 24),
+                const Divider(height: 20),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.fingerprint, color: Color(0xFF0078D4)),
-                  title: const Text('ID Exclusivo do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: const Text('ID do Dispositivo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   subtitle: Text(
                     settings.deviceId,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Card 2: Armazenamento e Downloads
             _buildSectionCard(
               context,
               title: 'Armazenamento',
               children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.download_for_offline_outlined, color: Color(0xFF10B981), size: 28),
-                  title: const Text('Pasta de Downloads', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(
-                    settings.downloadDirectory.isNotEmpty
-                        ? settings.downloadDirectory
-                        : 'Padrão do Sistema',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
-                        icon: const Icon(Icons.folder_open_rounded, size: 16),
-                        label: const Text('Abrir'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0078D4),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          elevation: 0,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.download_for_offline_outlined, color: Color(0xFF10B981), size: 24),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text('Pasta de Downloads', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 36.0),
+                      child: Text(
+                        settings.downloadDirectory.isNotEmpty
+                            ? settings.downloadDirectory
+                            : 'Padrão do Sistema',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                         ),
                       ),
-                      OutlinedButton(
-                        onPressed: () async {
-                          final path = await FilePicker.platform.getDirectoryPath();
-                          if (path != null) {
-                            settings.setDownloadDirectory(path);
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
+                          icon: const Icon(Icons.folder_open_rounded, size: 14),
+                          label: const Text('Abrir', style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0078D4),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            elevation: 0,
+                          ),
                         ),
-                        child: const Text('Mudar'),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () async {
+                            final path = await FilePicker.platform.getDirectoryPath();
+                            if (path != null) {
+                              settings.setDownloadDirectory(path);
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          ),
+                          child: const Text('Mudar', style: TextStyle(fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),

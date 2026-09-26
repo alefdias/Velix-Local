@@ -28,80 +28,152 @@ class _SyncScreenState extends State<SyncScreen> {
     final settings = context.watch<SettingsService>();
     final folders = syncService.folders;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(28.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 28.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Título + Botão de Adicionar Pasta + Sincronizar Tudo
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text(
-                          'Velix Sync',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
+            // Header: Título + Botões Responsivos
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Text(
+                        'Velix Sync',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.star, color: Colors.amber, size: 18),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Sincronização bidirecional em tempo real.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (folders.isNotEmpty) ...[
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: syncService.isSyncingAny
+                                ? null
+                                : () => syncService.syncAllActiveFolders(),
+                            icon: syncService.isSyncingAny
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.sync_rounded, size: 16),
+                            label: const Text('Sincronizar', style: TextStyle(fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
                         ),
-                        SizedBox(width: 8),
-                        Icon(Icons.star, color: Colors.amber, size: 20),
+                        const SizedBox(width: 8),
                       ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Sincronização bidirecional em tempo real entre computadores e celulares.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddFolderDialog(context),
+                          icon: const Icon(Icons.create_new_folder_rounded, size: 16),
+                          label: const Text('Nova Pasta', style: TextStyle(fontSize: 12)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0078D4),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    if (folders.isNotEmpty)
-                      OutlinedButton.icon(
-                        onPressed: syncService.isSyncingAny
-                            ? null
-                            : () => syncService.syncAllActiveFolders(),
-                        icon: syncService.isSyncingAny
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.sync_rounded, size: 18),
-                        label: const Text('Sincronizar Todas'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ],
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Text(
+                            'Velix Sync',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.star, color: Colors.amber, size: 20),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Sincronização bidirecional em tempo real entre computadores e celulares.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      if (folders.isNotEmpty)
+                        OutlinedButton.icon(
+                          onPressed: syncService.isSyncingAny
+                              ? null
+                              : () => syncService.syncAllActiveFolders(),
+                          icon: syncService.isSyncingAny
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.sync_rounded, size: 18),
+                          label: const Text('Sincronizar Todas'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddFolderDialog(context),
+                        icon: const Icon(Icons.create_new_folder_rounded, size: 18),
+                        label: const Text('Adicionar Pasta'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0078D4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddFolderDialog(context),
-                      icon: const Icon(Icons.create_new_folder_rounded, size: 18),
-                      label: const Text('Adicionar Pasta'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0078D4),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
 
             const SizedBox(height: 24),
 

@@ -55,6 +55,9 @@ class DeviceCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final hasAlias = device.customAlias != null && device.customAlias!.trim().isNotEmpty;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -75,26 +78,26 @@ class DeviceCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(isMobile ? 12.0 : 16.0),
         child: Row(
           children: [
             // Ícone da Plataforma
             Container(
-              width: 52,
-              height: 52,
+              width: isMobile ? 42 : 52,
+              height: isMobile ? 42 : 52,
               decoration: BoxDecoration(
                 color: _getPlatformColor(device.platform).withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: Icon(
                   _getPlatformIcon(device.platform),
                   color: _getPlatformColor(device.platform),
-                  size: 28,
+                  size: isMobile ? 22 : 28,
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: isMobile ? 10 : 16),
 
             // Informações do Dispositivo
             Expanded(
@@ -106,92 +109,65 @@ class DeviceCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           device.resolvedName,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: isMobile ? 14 : 16,
                             fontWeight: FontWeight.w600,
                             letterSpacing: -0.2,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (onRename != null) ...[
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 16),
-                          tooltip: 'Renomear este computador',
-                          visualDensity: VisualDensity.compact,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: onRename,
-                        ),
-                      ],
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       // Dot de status online/offline
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: device.isOnline ? const Color(0xFF10B981) : Colors.grey.shade500,
-                          boxShadow: device.isOnline
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF10B981).withOpacity(0.5),
-                                    blurRadius: 6,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
-                              : null,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
                         device.isOnline ? 'Online' : 'Offline',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: device.isOnline ? const Color(0xFF10B981) : Colors.grey,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                  const SizedBox(height: 3),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 2,
                     children: [
-                      if (hasAlias) ...[
-                        Text(
-                          'Hostname: ${device.name} • ',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
                       Text(
                         '${device.platform.displayName} • ${device.ip}',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: isMobile ? 11 : 13,
                           color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                         ),
                       ),
-                      if (device.isTrusted) ...[
-                        const SizedBox(width: 8),
+                      if (device.isTrusted)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0078D4).withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified, size: 12, color: Color(0xFF0078D4)),
-                              SizedBox(width: 4),
+                              Icon(Icons.verified, size: 10, color: Color(0xFF0078D4)),
+                              SizedBox(width: 3),
                               Text(
                                 'Confiável',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF0078D4),
                                 ),
@@ -199,36 +175,48 @@ class DeviceCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ],
               ),
             ),
 
+            const SizedBox(width: 8),
+
             // Ações do Card
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                FilledButton.tonalIcon(
-                  onPressed: device.isOnline ? onSendFiles : null,
-                  icon: const Icon(Icons.send_rounded, size: 16),
-                  label: const Text('Enviar'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0078D4).withOpacity(0.12),
-                    foregroundColor: const Color(0xFF0078D4),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                if (isMobile)
+                  IconButton.filledTonal(
+                    onPressed: device.isOnline ? onSendFiles : null,
+                    icon: const Icon(Icons.send_rounded, size: 18),
+                    tooltip: 'Enviar Arquivos',
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFF0078D4).withOpacity(0.12),
+                      foregroundColor: const Color(0xFF0078D4),
+                    ),
+                  )
+                else
+                  FilledButton.tonalIcon(
+                    onPressed: device.isOnline ? onSendFiles : null,
+                    icon: const Icon(Icons.send_rounded, size: 16),
+                    label: const Text('Enviar'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0078D4).withOpacity(0.12),
+                      foregroundColor: const Color(0xFF0078D4),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 4),
                 IconButton(
                   icon: Icon(
                     Icons.edit_outlined,
                     size: 18,
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
-                  tooltip: 'Renomear Dispositivo',
+                  tooltip: 'Renomear',
+                  visualDensity: VisualDensity.compact,
                   onPressed: onRename,
                 ),
               ],

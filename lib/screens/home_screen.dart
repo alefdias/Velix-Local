@@ -58,16 +58,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String formattedSyncedSize = _formatBytes(totalSyncedBytes);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(28.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 28.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Banner de Boas-vindas / Hero com gradiente sutil
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(isMobile ? 18 : 24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isDark
@@ -89,134 +92,99 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
+              child: isMobile
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0078D4).withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.wifi_tethering, size: 14, color: Color(0xFF0078D4)),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'P2P Local Ativo',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF0078D4),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        _buildHeroInfo(isDark, settings),
+                        const SizedBox(height: 16),
+                        _buildHeroActions(isDark, settings, mdns, fullWidth: true),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: _buildHeroInfo(isDark, settings)),
+                        const SizedBox(width: 16),
+                        _buildHeroActions(isDark, settings, mdns, fullWidth: false),
+                      ],
+                    ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Métricas em Cards de Estatísticas
+            isMobile
+                ? SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildStatCard(
+                          context,
+                          title: 'Dispositivos Online',
+                          value: '${onlineDevices.length}',
+                          subtitle: '${mdns.devices.length} na vizinhança',
+                          icon: Icons.devices_rounded,
+                          color: const Color(0xFF0078D4),
+                          isExpanded: false,
+                          width: 165,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Olá, ${settings.deviceName}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
-                          ),
+                        const SizedBox(width: 12),
+                        _buildStatCard(
+                          context,
+                          title: 'Pastas Sincronizadas',
+                          value: '${syncService.folders.length}',
+                          subtitle: syncService.isSyncingAny ? 'Sincronizando' : 'Em tempo real',
+                          icon: Icons.folder_special_rounded,
+                          color: const Color(0xFF10B981),
+                          isExpanded: false,
+                          width: 165,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Sincronize arquivos na mesma rede local de forma instantânea, contínua e sem internet.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                          ),
+                        const SizedBox(width: 12),
+                        _buildStatCard(
+                          context,
+                          title: 'Espaço Sincronizado',
+                          value: formattedSyncedSize,
+                          subtitle: '$totalSyncedFiles arquivos',
+                          icon: Icons.pie_chart_rounded,
+                          color: const Color(0xFF8B5CF6),
+                          isExpanded: false,
+                          width: 165,
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
+                  )
+                : Row(
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Downloads'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
-                          side: BorderSide(
-                            color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                      _buildStatCard(
+                        context,
+                        title: 'Dispositivos Online',
+                        value: '${onlineDevices.length}',
+                        subtitle: '${mdns.devices.length} na vizinhança',
+                        icon: Icons.devices_rounded,
+                        color: const Color(0xFF0078D4),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () => mdns.triggerManualScan(),
-                        icon: mdns.isSearching
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.refresh_rounded, size: 18),
-                        label: Text(mdns.isSearching ? 'Buscando...' : 'Buscar Rede'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0078D4),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                      const SizedBox(width: 16),
+                      _buildStatCard(
+                        context,
+                        title: 'Pastas Sincronizadas',
+                        value: '${syncService.folders.length}',
+                        subtitle: syncService.isSyncingAny ? 'Sincronizando agora' : 'Em tempo real',
+                        icon: Icons.folder_special_rounded,
+                        color: const Color(0xFF10B981),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildStatCard(
+                        context,
+                        title: 'Espaço Sincronizado',
+                        value: formattedSyncedSize,
+                        subtitle: '$totalSyncedFiles arquivos gerenciados',
+                        icon: Icons.pie_chart_rounded,
+                        color: const Color(0xFF8B5CF6),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
 
             const SizedBox(height: 24),
-
-            // Métricas em Cards de Estatísticas
-            Row(
-              children: [
-                _buildStatCard(
-                  context,
-                  title: 'Dispositivos Online',
-                  value: '${onlineDevices.length}',
-                  subtitle: '${mdns.devices.length} na vizinhança',
-                  icon: Icons.devices_rounded,
-                  color: const Color(0xFF0078D4),
-                ),
-                const SizedBox(width: 16),
-                _buildStatCard(
-                  context,
-                  title: 'Pastas Sincronizadas',
-                  value: '${syncService.folders.length}',
-                  subtitle: syncService.isSyncingAny ? 'Sincronizando agora' : 'Em tempo real',
-                  icon: Icons.folder_special_rounded,
-                  color: const Color(0xFF10B981),
-                ),
-                const SizedBox(width: 16),
-                _buildStatCard(
-                  context,
-                  title: 'Espaço Sincronizado',
-                  value: formattedSyncedSize,
-                  subtitle: '$totalSyncedFiles arquivos gerenciados',
-                  icon: Icons.pie_chart_rounded,
-                  color: const Color(0xFF8B5CF6),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 28),
 
             // Seção: Pastas Sincronizadas Recentes
             Row(
@@ -462,6 +430,110 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildHeroInfo(bool isDark, SettingsService settings) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0078D4).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.wifi_tethering, size: 14, color: Color(0xFF0078D4)),
+                  SizedBox(width: 6),
+                  Text(
+                    'P2P Local Ativo',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0078D4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Olá, ${settings.deviceName}',
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Sincronize arquivos na mesma rede local de forma instantânea, contínua e sem internet.',
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroActions(bool isDark, SettingsService settings, MdnsDiscoveryService mdns, {required bool fullWidth}) {
+    final buttons = [
+      OutlinedButton.icon(
+        onPressed: () => FileActionService.openFolder(settings.downloadDirectory, context),
+        icon: const Icon(Icons.folder_open_rounded, size: 18),
+        label: const Text('Downloads'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+          side: BorderSide(
+            color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      ElevatedButton.icon(
+        onPressed: () => mdns.triggerManualScan(),
+        icon: mdns.isSearching
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Icon(Icons.refresh_rounded, size: 18),
+        label: Text(mdns.isSearching ? 'Buscando...' : 'Buscar Rede'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF0078D4),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    ];
+
+    if (fullWidth) {
+      return Row(
+        children: [
+          Expanded(child: buttons[0]),
+          const SizedBox(width: 10),
+          Expanded(child: buttons[1]),
+        ],
+      );
+    }
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: buttons,
+    );
+  }
+
   Widget _buildStatCard(
     BuildContext context, {
     required String title,
@@ -469,72 +541,87 @@ class _HomeScreenState extends State<HomeScreen> {
     required String subtitle,
     required IconData icon,
     required Color color,
+    bool isExpanded = true,
+    double? width,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E242C) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    final card = Container(
+      width: width,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E242C) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
+          width: 1.5,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
+                child: Icon(icon, color: color, size: 18),
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -0.5,
             ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-              ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
             ),
-          ],
-        ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
+
+    if (isExpanded) {
+      return Expanded(child: card);
+    }
+    return card;
   }
 
   Widget _buildEmptyState(

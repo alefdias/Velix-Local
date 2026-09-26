@@ -90,9 +90,9 @@ class VelixLocalApp extends StatelessWidget {
         elevation: 2,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0078D4));
+            return const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0078D4));
           }
-          return const TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Color(0xFF64748B));
+          return const TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Color(0xFF64748B));
         }),
       ),
       dividerColor: const Color(0xFFE2E8F0),
@@ -114,6 +114,17 @@ class VelixLocalApp extends StatelessWidget {
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF13171D),
+        indicatorColor: const Color(0xFF0078D4).withOpacity(0.2),
+        elevation: 2,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF38BDF8));
+          }
+          return const TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Color(0xFF94A3B8));
+        }),
       ),
     );
   }
@@ -492,7 +503,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             NavigationDestination(
               icon: const Icon(Icons.devices_outlined),
               selectedIcon: const Icon(Icons.devices),
-              label: 'Dispositivos',
+              label: 'Rede',
             ),
             NavigationDestination(
               icon: const Icon(Icons.sync_outlined),
@@ -502,7 +513,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             NavigationDestination(
               icon: const Icon(Icons.swap_horiz_outlined),
               selectedIcon: const Icon(Icons.swap_horiz),
-              label: 'Transferir',
+              label: 'Enviar',
             ),
             NavigationDestination(
               icon: const Icon(Icons.history_outlined),

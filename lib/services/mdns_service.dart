@@ -56,6 +56,11 @@ class MdnsDiscoveryService extends ChangeNotifier {
 
       // Anunciar presença imediatamente
       await broadcastPresence();
+
+      // Varredura de sub-rede inicial em background para descobrir celulares mesmo com isolamento de Wi-Fi
+      Future.delayed(const Duration(seconds: 1), () {
+        scanSubnet();
+      });
     } catch (e) {
       debugPrint('[MdnsDiscoveryService] Erro ao iniciar socket UDP: $e');
     }
@@ -192,6 +197,9 @@ class MdnsDiscoveryService extends ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
+    // 1. Broadcast UDP imediato de presença e busca
+    await broadcastPresence();
+
     if (_socket != null) {
       final settings = SettingsService.instance;
       final payload = jsonEncode({
@@ -202,8 +210,23 @@ class MdnsDiscoveryService extends ChangeNotifier {
 
       try {
         _socket!.send(bytes, InternetAddress('255.255.255.255'), settings.discoveryPort);
+        final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4);
+        for (final interface in interfaces) {
+          for (final addr in interface.addresses) {
+            final parts = addr.address.split('.');
+            if (parts.length == 4) {
+              final subnetBroadcast = '${parts[0]}.${parts[1]}.${parts[2]}.255';
+              try {
+                _socket!.send(bytes, InternetAddress(subnetBroadcast), settings.discoveryPort);
+              } catch (_) {}
+            }
+          }
+        }
       } catch (_) {}
     }
+
+    // 2. Dispara varredura HTTP na sub-rede em paralelo (à prova de roteadores com isolamento Wi-Fi)
+    unawaited(scanSubnet());
 
     await Future.delayed(const Duration(milliseconds: 1500));
     _isSearching = false;

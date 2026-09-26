@@ -42,47 +42,96 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Padding(
-        padding: const EdgeInsets.all(28.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 28.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header: Título + Botão de Limpar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Histórico de Transferências',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Histórico',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Registro completo armazenado localmente em banco SQLite.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Transferências locais salvas no SQLite.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                     ),
-                  ],
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () => FileActionService.openFolder(SettingsService.instance.downloadDirectory, context),
-                      icon: const Icon(Icons.folder_open_rounded, size: 18),
-                      label: const Text('Pasta de Downloads'),
-                      style: OutlinedButton.styleFrom(
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => FileActionService.openFolder(SettingsService.instance.downloadDirectory, context),
+                          icon: const Icon(Icons.folder_open_rounded, size: 16),
+                          label: const Text('Downloads', style: TextStyle(fontSize: 12)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _history.isEmpty ? null : () => _confirmClearHistory(context),
+                        icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),
+                        tooltip: 'Limpar',
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Histórico de Transferências',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Registro completo armazenado localmente em banco SQLite.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => FileActionService.openFolder(SettingsService.instance.downloadDirectory, context),
+                        icon: const Icon(Icons.folder_open_rounded, size: 18),
+                        label: const Text('Pasta de Downloads'),
+                        style: OutlinedButton.styleFrom(
                         foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
                         side: BorderSide(
                           color: isDark ? const Color(0xFF333C4A) : const Color(0xFFCBD5E1),

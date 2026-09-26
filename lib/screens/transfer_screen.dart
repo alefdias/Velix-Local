@@ -44,10 +44,13 @@ class _TransferScreenState extends State<TransferScreen> {
 
     final activeList = chunkTransfer.activeTransfers;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(28.0),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 28.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -55,41 +58,43 @@ class _TransferScreenState extends State<TransferScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text(
-                          'Transferência Inteligente',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Transferência Rápida',
+                            style: TextStyle(
+                              fontSize: isMobile ? 22 : 26,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.bolt, color: Color(0xFF0078D4), size: 24),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Envio manual em alta velocidade com retomada automática por blocos (Chunk Transfer).',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.bolt, color: Color(0xFF0078D4), size: 22),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Envio direto por blocos (Chunk Transfer) sem limites de tamanho.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
 
             // Seleção de Dispositivo Destino
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E242C) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -97,64 +102,130 @@ class _TransferScreenState extends State<TransferScreen> {
                   color: isDark ? const Color(0xFF2C3542) : const Color(0xFFE2E8F0),
                 ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.send_rounded, color: Color(0xFF0078D4), size: 22),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Destinatário:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  ),
-                  const SizedBox(width: 16),
-                  if (onlineDevices.isEmpty)
-                    const Expanded(
-                      child: Text(
-                        'Nenhum dispositivo online na rede. Abra o Velix Local em outro aparelho.',
-                        style: TextStyle(color: Colors.amber, fontSize: 13),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<Device>(
-                          value: onlineDevices.contains(_selectedDevice)
-                              ? _selectedDevice
-                              : onlineDevices.first,
-                          isExpanded: true,
-                          items: onlineDevices.map((dev) {
-                            return DropdownMenuItem<Device>(
-                              value: dev,
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    dev.platform == DevicePlatformType.windows
-                                        ? Icons.laptop_windows
-                                        : (dev.platform == DevicePlatformType.android
-                                            ? Icons.phone_android
-                                            : Icons.computer),
-                                    size: 18,
-                                    color: const Color(0xFF0078D4),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    '${dev.resolvedName} • ${dev.platform.displayName} (${dev.ip})',
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (dev) {
-                            setState(() {
-                              _selectedDevice = dev;
-                            });
-                          },
+              child: isMobile
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.send_rounded, color: Color(0xFF0078D4), size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Enviar para:',
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            ),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        if (onlineDevices.isEmpty)
+                          const Text(
+                            'Nenhum dispositivo online. Abra o Velix em outro aparelho.',
+                            style: TextStyle(color: Colors.amber, fontSize: 12),
+                          )
+                        else
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton<Device>(
+                              value: onlineDevices.contains(_selectedDevice)
+                                  ? _selectedDevice
+                                  : onlineDevices.first,
+                              isExpanded: true,
+                              items: onlineDevices.map((dev) {
+                                return DropdownMenuItem<Device>(
+                                  value: dev,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        dev.platform == DevicePlatformType.windows
+                                            ? Icons.laptop_windows
+                                            : (dev.platform == DevicePlatformType.android
+                                                ? Icons.phone_android
+                                                : Icons.computer),
+                                        size: 16,
+                                        color: const Color(0xFF0078D4),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          '${dev.resolvedName} (${dev.ip})',
+                                          style: const TextStyle(fontSize: 13),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (dev) {
+                                setState(() {
+                                  _selectedDevice = dev;
+                                });
+                              },
+                            ),
+                          ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        const Icon(Icons.send_rounded, color: Color(0xFF0078D4), size: 22),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Destinatário:',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                        const SizedBox(width: 16),
+                        if (onlineDevices.isEmpty)
+                          const Expanded(
+                            child: Text(
+                              'Nenhum dispositivo online na rede. Abra o Velix Local em outro aparelho.',
+                              style: TextStyle(color: Colors.amber, fontSize: 13),
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<Device>(
+                                value: onlineDevices.contains(_selectedDevice)
+                                    ? _selectedDevice
+                                    : onlineDevices.first,
+                                isExpanded: true,
+                                items: onlineDevices.map((dev) {
+                                  return DropdownMenuItem<Device>(
+                                    value: dev,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          dev.platform == DevicePlatformType.windows
+                                              ? Icons.laptop_windows
+                                              : (dev.platform == DevicePlatformType.android
+                                                  ? Icons.phone_android
+                                                  : Icons.computer),
+                                          size: 18,
+                                          color: const Color(0xFF0078D4),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            '${dev.resolvedName} • ${dev.platform.displayName} (${dev.ip})',
+                                            style: const TextStyle(fontSize: 13),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (dev) {
+                                  setState(() {
+                                    _selectedDevice = dev;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                ],
-              ),
             ),
 
             const SizedBox(height: 20),
