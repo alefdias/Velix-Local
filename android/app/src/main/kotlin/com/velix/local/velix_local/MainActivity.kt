@@ -108,54 +108,33 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun showNotification(title: String, message: String, filePath: String?) {
         try {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channelId = "velix_transfers"
-            val channelName = "Transferências Velix"
+            playNotificationSound()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+            val channelId = "velix_transfers"
+
+            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
                     channelId,
-                    channelName,
+                    "Transferências Velix",
                     NotificationManager.IMPORTANCE_HIGH
                 ).apply {
                     description = "Notificações de arquivos recebidos via Velix Local"
                     enableVibration(true)
                 }
                 notificationManager.createNotificationChannel(channel)
-            }
-
-            playNotificationSound()
-
-            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Notification.Builder(applicationContext, channelId)
             } else {
                 Notification.Builder(applicationContext)
             }
 
-            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val pendingIntent = if (launchIntent != null) {
-                PendingIntent.getActivity(
-                    applicationContext,
-                    0,
-                    launchIntent,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-                )
-            } else null
-
             builder.setContentTitle(title)
                 .setContentText(message)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setAutoCancel(true)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setDefaults(Notification.DEFAULT_ALL)
-
-            if (pendingIntent != null) {
-                builder.setContentIntent(pendingIntent)
-            }
 
             val notificationId = (System.currentTimeMillis() % 100000).toInt()
             notificationManager.notify(notificationId, builder.build())
