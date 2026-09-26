@@ -5,6 +5,7 @@ class DeviceCard extends StatelessWidget {
   final Device device;
   final VoidCallback? onPair;
   final VoidCallback? onSendFiles;
+  final VoidCallback? onTakePhoto;
   final VoidCallback? onUnpair;
   final VoidCallback? onRename;
 
@@ -13,6 +14,7 @@ class DeviceCard extends StatelessWidget {
     required this.device,
     this.onPair,
     this.onSendFiles,
+    this.onTakePhoto,
     this.onUnpair,
     this.onRename,
   });
@@ -186,6 +188,18 @@ class DeviceCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (onTakePhoto != null && device.isOnline) ...[
+                  IconButton.filledTonal(
+                    onPressed: onTakePhoto,
+                    icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                    tooltip: 'Tirar Foto e Enviar',
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981).withOpacity(0.12),
+                      foregroundColor: const Color(0xFF10B981),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 if (isMobile)
                   IconButton.filledTonal(
                     onPressed: device.isOnline ? onSendFiles : null,

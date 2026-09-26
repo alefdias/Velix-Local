@@ -14,6 +14,7 @@ import 'database_service.dart';
 import 'settings_service.dart';
 import 'pair_service.dart';
 import 'file_action_service.dart';
+import 'notification_service.dart';
 
 const int kDefaultChunkSize = 1024 * 1024; // 1 MB por bloco
 
@@ -355,6 +356,13 @@ class ChunkTransferService extends ChangeNotifier {
       await DatabaseService.instance.saveTransferHistory(completedTransfer);
       await DatabaseService.instance.clearChunkProgress(sessionId);
       notifyListeners();
+
+      // Disparar notificação do sistema com som/barulhinho
+      NotificationService.instance.notifyFileReceived(
+        fileName: completedTransfer.fileName,
+        senderDevice: completedTransfer.sourceDevice,
+        filePath: destinationPath,
+      );
 
       // Manter o card com botões "Abrir Arquivo" e "Abrir Pasta" visível por 25s
       Future.delayed(const Duration(seconds: 25), () {

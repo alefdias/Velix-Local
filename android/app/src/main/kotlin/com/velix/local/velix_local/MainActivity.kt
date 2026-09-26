@@ -87,9 +87,85 @@ class MainActivity : FlutterActivity() {
                     } else {
                         result.success(true)
                     }
+                "playNotificationSound" -> {
+                    playNotificationSound()
+                    result.success(true)
+                }
+                "showTransferNotification" -> {
+                    val title = call.argument<String>("title") ?: "Arquivo Recebido"
+                    val message = call.argument<String>("message") ?: "Transferência concluída"
+                    val filePath = call.argument<String>("filePath")
+                    showNotification(title, message, filePath)
+                    result.success(true)
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun showNotification(title: String, message: String, filePath: String?) {
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channelId = "velix_transfers"
+            val channelName = "Transferências Velix"
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Notificações de arquivos recebidos via Velix Local"
+                    enableVibration(true)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            playNotificationSound()
+
+            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Notification.Builder(applicationContext, channelId)
+            } else {
+                Notification.Builder(applicationContext)
+            }
+
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = if (launchIntent != null) {
+                PendingIntent.getActivity(
+                    applicationContext,
+                    0,
+                    launchIntent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+                )
+            } else null
+
+            builder.setContentTitle(title)
+                .setContentText(message)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setAutoCancel(true)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_ALL)
+
+            if (pendingIntent != null) {
+                builder.setContentIntent(pendingIntent)
+            }
+
+            val notificationId = (System.currentTimeMillis() % 100000).toInt()
+            notificationManager.notify(notificationId, builder.build())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun playNotificationSound() {
+        try {
+            val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val ringtone = RingtoneManager.getRingtone(applicationContext, notificationUri)
+            ringtone?.play()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

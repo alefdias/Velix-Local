@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:path/path.dart' as p;
 
@@ -296,15 +297,24 @@ class _TransferScreenState extends State<TransferScreen> {
                           icon: const Icon(Icons.file_copy_outlined, size: 16),
                           label: const Text('Selecionar Arquivos'),
                         ),
-                        OutlinedButton.icon(
-                          onPressed: _pickFolder,
-                          icon: const Icon(Icons.folder_outlined, size: 16),
-                          label: const Text('Enviar Pasta'),
+                        FilledButton.tonalIcon(
+                          onPressed: _takePhoto,
+                          icon: const Icon(Icons.camera_alt_rounded, size: 16),
+                          label: const Text('Tirar Foto'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981).withOpacity(0.15),
+                            foregroundColor: const Color(0xFF10B981),
+                          ),
                         ),
                         OutlinedButton.icon(
                           onPressed: _pickImages,
                           icon: const Icon(Icons.photo_library_outlined, size: 16),
-                          label: const Text('Imagens'),
+                          label: const Text('Galeria'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _pickFolder,
+                          icon: const Icon(Icons.folder_outlined, size: 16),
+                          label: const Text('Enviar Pasta'),
                         ),
                         OutlinedButton.icon(
                           onPressed: _sendQuickText,
@@ -396,6 +406,31 @@ class _TransferScreenState extends State<TransferScreen> {
           .where((f) => f.existsSync())
           .toList();
       _handleSelectedFiles(files);
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 92,
+      );
+      if (photo != null) {
+        final file = File(photo.path);
+        if (await file.exists()) {
+          _handleSelectedFiles([file]);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível abrir a câmera: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 

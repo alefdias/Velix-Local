@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/device.dart';
 import '../services/mdns_service.dart';
 import '../services/pair_service.dart';
+import '../services/file_action_service.dart';
 import '../widgets/device_card.dart';
 
 class DevicesScreen extends StatelessWidget {
@@ -271,6 +272,7 @@ class DevicesScreen extends StatelessWidget {
                         onSendToDevice!(device);
                       }
                     },
+                    onTakePhoto: () => FileActionService.takePhotoAndSend(context, device),
                     onUnpair: () => pairService.unpairDevice(device.id),
                   );
                 },

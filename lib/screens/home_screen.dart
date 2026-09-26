@@ -269,6 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onRename: () => _showRenameDialog(context, device, mdns),
                     onPair: () => widget.onNavigate(0),
                     onSendFiles: () => widget.onNavigate(2),
+                    onTakePhoto: () => FileActionService.takePhotoAndSend(context, device),
                   );
                 }).toList(),
               ),

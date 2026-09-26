@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
+import 'package:image_picker/image_picker.dart';
 import '../models/transfer.dart';
+import '../models/device.dart';
 import 'settings_service.dart';
+import 'chunk_transfer_service.dart';
 
 class FileActionService {
   FileActionService._();
@@ -475,7 +478,7 @@ class FileActionService {
               fontFamily: isPath ? 'monospace' : null,
               color: isDark ? Colors.white70 : Colors.black87,
             ),
-            maxLines: isPath ? 2 : 1,
+            maxLines: isPath ? 3 : 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -566,6 +569,43 @@ class FileActionService {
         return const Color(0xFF10B981);
       default:
         return const Color(0xFF0078D4);
+    }
+  }
+
+  /// Abre a câmera do celular/dispositivo, tira foto e envia imediatamente ao dispositivo de destino
+  static Future<void> takePhotoAndSend(BuildContext context, Device targetDevice) async {
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 92,
+      );
+      if (photo != null) {
+        final file = File(photo.path);
+        if (await file.exists()) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Enviando foto da câmera para ${targetDevice.resolvedName}...'),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          }
+          await ChunkTransferService.instance.sendFile(
+            targetDevice: targetDevice,
+            file: file,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível abrir a câmera: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 }
