@@ -47,3 +47,6 @@ app.*.map.json
 # Local symlinks/binaries
 libsqlite3.so
 *.so
+dist/
+pkg_root/
+pkg_deb/

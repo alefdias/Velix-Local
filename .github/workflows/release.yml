@@ -26,7 +26,7 @@ jobs:
       - name: Instalar Dependências do Linux
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsqlite3-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsqlite3-dev flatpak elfutils
 
       - name: Configurar Flutter
         uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff # v2.18.0
@@ -85,7 +85,11 @@ jobs:
             -p dist/velix-local-fedora-x86_64.rpm \
             -C pkg_root .
 
-      - name: Upload Artefatos Linux (.deb, .rpm, .tar.gz)
+          # 5. Gerar pacote Flatpak bundle (.flatpak)
+          chmod +x packaging/flatpak/build-flatpak-bundle.sh
+          ./packaging/flatpak/build-flatpak-bundle.sh
+
+      - name: Upload Artefatos Linux (.deb, .rpm, .tar.gz, .flatpak)
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: velix-local-linux-packages
@@ -93,6 +97,7 @@ jobs:
             dist/velix-local-ubuntu-amd64.deb
             dist/velix-local-fedora-x86_64.rpm
             dist/velix-local-linux-x64.tar.gz
+            dist/velix-local-linux-x86_64.flatpak
 
   # =============================================================
   # BUILD WINDOWS DESKTOP
@@ -217,6 +222,7 @@ jobs:
             ### 📦 Binários Oficiais Disponíveis:
             * 🎩 **Fedora / RHEL / CentOS:** `velix-local-fedora-x86_64.rpm` (Instalação nativa via DNF ou clique duplo)
             * 🐧 **Ubuntu / Debian / Mint:** `velix-local-ubuntu-amd64.deb` (Instalação nativa via APT ou clique duplo)
-            * 📦 **Linux Universal:** `velix-local-linux-x64.tar.gz` (Executável portátil para qualquer distro)
+            * 📦 **Flatpak (Universal / Steam Deck):** `velix-local-linux-x86_64.flatpak` (Instalação isolada via clique duplo ou `flatpak install`)
+            * 🗜️ **Linux Universal (Portable):** `velix-local-linux-x64.tar.gz` (Executável portátil para qualquer distro)
             * 🪟 **Windows:** `velix-local-windows-x64.zip` (Executável .exe portátil)
             * 🤖 **Android:** `velix-local-android.apk` (Instalador universal Android)
